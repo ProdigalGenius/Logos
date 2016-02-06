@@ -1,0 +1,2 @@
+# Logos
+JR bir yazılımcı
