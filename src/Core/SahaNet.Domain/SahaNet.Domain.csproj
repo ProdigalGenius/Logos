@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>SahaNet.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>

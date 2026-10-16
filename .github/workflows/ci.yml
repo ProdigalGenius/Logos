@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore SahaNet.sln
+
+      - name: Build (uyarılar hata)
+        run: dotnet build SahaNet.sln --no-restore -c Release
+
+      - name: Unit & Architecture tests
+        run: >
+          dotnet test SahaNet.sln --no-build -c Release
+          --filter "FullyQualifiedName!~IntegrationTests"
+          --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+      - name: Integration tests (Testcontainers)
+        run: dotnet test tests/SahaNet.IntegrationTests --no-build -c Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: TestResults/**/coverage.cobertura.xml
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f src/Api/SahaNet.Api/Dockerfile -t sahanet-api:ci .
