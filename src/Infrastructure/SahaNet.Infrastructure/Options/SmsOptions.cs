@@ -6,7 +6,10 @@ public sealed class SmsOptions
 
     /// <summary>
     /// Yalnızca geliştirme ortamında true olmalı: SMS içeriği (OTP kodu) loga yazılır.
-    /// Gerçek sağlayıcı (Netgsm / İleti Merkezi) Faz 2'de eklenecek.
     /// </summary>
     public bool LogMessageContent { get; init; }
+
+    public SmsProvider Provider { get; init; } = SmsProvider.Logging;
+
+    public NetgsmOptions Netgsm { get; init; } = new();
 }

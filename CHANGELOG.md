@@ -4,6 +4,17 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esas alınır
 
 ## [Unreleased]
 
+### Faz 2 — Konum ve uyarı
+- PostGIS: `Region` (geography nokta + yarıçap, GiST indeks), 13 kıyı deniz alanı seed'i, `ST_DWithin` ile yakın bölge sorgusu.
+- Bölge aboneliği (konu bayrakları, en fazla 10 bölge) ve FCM cihaz kaydı (token el değiştirirse yeni sahibe geçer).
+- Open-Meteo rüzgâr + dalga istemcisi, Redis önbellek, `AddStandardResilienceHandler`.
+- Beaufort tabanlı uyarı değerlendirici, tekrar üretimi engelleyen dedup anahtarı, Türkçe uyarı metni.
+- Uyarı dağıtımı: push → kritikte SMS yedeği, geçersiz token temizliği, idempotent teslim kaydı.
+- FCM (kritik kanal/yüksek öncelik) ve Netgsm SMS sağlayıcıları; geliştirme için loglayan sağlayıcılar.
+- Hangfire (PostgreSQL): hava kontrolü, 30 günlük hesap silme ve KVKK saklama süresi işleri.
+- Verilerimi indir çıktısına abonelikler ve cihazlar eklendi.
+- CI: OpenTelemetry güvenlik açığı nedeniyle 1.20.0'a yükseltildi; Newtonsoft.Json 13.0.4'e sabitlendi.
+
 ### Faz 1 — Kimlik
 - Telefon + SMS OTP ile giriş; numara başına bekleme/saatlik limit, hatalı denemede kilit, IP bazlı rate limit.
 - JWT erişim belirteci + döndürülen (rotation) yenileme belirteci, tekrar kullanımda aile iptali.

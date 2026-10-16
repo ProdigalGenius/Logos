@@ -23,13 +23,20 @@ public static class DependencyInjection
         });
         services.AddValidatorsFromAssemblies(assemblies, includeInternalTypes: true);
 
-        services.AddOptions<IdentityOptions>()
-            .BindConfiguration(IdentityOptions.SectionName)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        AddValidatedOptions<IdentityOptions>(services, IdentityOptions.SectionName);
+
+        AddValidatedOptions<AlertOptions>(services, AlertOptions.SectionName);
+        services.AddOptions<RetentionOptions>().BindConfiguration(RetentionOptions.SectionName);
 
         services.AddScoped<TokenIssuer>();
 
         return services;
     }
+
+    private static void AddValidatedOptions<T>(IServiceCollection services, string section)
+        where T : class =>
+        services.AddOptions<T>()
+            .BindConfiguration(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 }

@@ -3,10 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using SahaNet.Application.Abstractions;
 using SahaNet.Application.Events;
 using SahaNet.Application.Identity.Abstractions;
+using SahaNet.Domain.Alerts;
 using SahaNet.Domain.Common;
 using SahaNet.Domain.Consents;
 using SahaNet.Domain.Events;
+using SahaNet.Domain.Geo;
 using SahaNet.Domain.Identity;
+using SahaNet.Domain.Notifications;
 using SahaNet.Infrastructure.Persistence.Configurations;
 
 namespace SahaNet.Infrastructure.Persistence;
@@ -22,6 +25,7 @@ public sealed class SahaNetDbContext(
 {
     public const string CoreSchema = "core";
     public const string IdentitySchema = "identity";
+    public const string AlertsSchema = "alerts";
 
     public DbSet<User> Users => Set<User>();
 
@@ -32,6 +36,16 @@ public sealed class SahaNetDbContext(
     public DbSet<ConsentDocument> ConsentDocuments => Set<ConsentDocument>();
 
     public DbSet<UserConsent> UserConsents => Set<UserConsent>();
+
+    public DbSet<Region> Regions => Set<Region>();
+
+    public DbSet<RegionSubscription> RegionSubscriptions => Set<RegionSubscription>();
+
+    public DbSet<DeviceRegistration> Devices => Set<DeviceRegistration>();
+
+    public DbSet<Alert> Alerts => Set<Alert>();
+
+    public DbSet<AlertDelivery> AlertDeliveries => Set<AlertDelivery>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -58,6 +72,11 @@ public sealed class SahaNetDbContext(
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
         modelBuilder.ApplyConfiguration(new ConsentDocumentConfiguration());
         modelBuilder.ApplyConfiguration(new UserConsentConfiguration());
+        modelBuilder.ApplyConfiguration(new RegionConfiguration());
+        modelBuilder.ApplyConfiguration(new RegionSubscriptionConfiguration());
+        modelBuilder.ApplyConfiguration(new DeviceRegistrationConfiguration());
+        modelBuilder.ApplyConfiguration(new AlertConfiguration());
+        modelBuilder.ApplyConfiguration(new AlertDeliveryConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

@@ -63,6 +63,13 @@ docker compose --profile api up --build
 | `PUT /api/me/profile` | Ad / il güncelle |
 | `GET /api/me/export` | KVKK: verilerimi indir |
 | `DELETE /api/me` · `POST /api/me/deletion/cancel` | KVKK: hesabımı sil (30 gün) / iptal |
+| `GET /api/geo/regions` | Deniz bölgeleri |
+| `GET /api/geo/regions/nearby?lat=&lon=` | Konumu kapsayan bölgeler (PostGIS, konum saklanmaz) |
+| `GET /api/geo/regions/{id}/forecast?days=` | Saatlik rüzgâr/dalga tahmini + aktif uyarılar |
+| `GET /api/alerts/active?regionId=` | Aktif uyarılar |
+| `GET/PUT/DELETE /api/me/subscriptions/{regionId}` | Bölge aboneliği (konular: Weather, Market, Community) |
+| `POST /api/me/devices` · `POST /api/me/devices/unregister` | Push (FCM) cihaz kaydı |
+| `/hangfire` | Arka plan işleri paneli (Development, yalnızca localhost) |
 | `/swagger` | OpenAPI arayüzü (Development) |
 
 Konfigürasyon Options pattern ile (`Database`, `Redis`, `Identity`, `Jwt`, `PersonalData`, `Sms`,
@@ -86,6 +93,34 @@ Kurulum 3 adım: **telefon → SMS kodu → rızalar + niş ve il seçimi**.
   `PurgeDeletedAccountsCommand` 30 gün sonra kalıcı siler (Faz 2'de Hangfire ile zamanlanacak).
 
 > Seed edilen KVKK metinleri **taslaktır**; yayından önce hukuk onayı gerekir.
+
+### Konum ve uyarılar (Faz 2)
+
+- **Bölgeler:** 13 kıyı deniz alanı seed edilir (merkez + yarıçap, `geography(Point,4326)` + GiST).
+  "Yakınımdaki bölgeler" PostGIS `ST_DWithin` ile bulunur; kullanıcının konumu saklanmaz.
+- **Hava/deniz verisi:** Open-Meteo (rüzgâr + dalga), Redis'te 30 dk önbellek, standart dayanıklılık
+  (retry/timeout/circuit breaker). Ücretsiz uç nokta ticari değildir; üretimde `Weather:ApiKey` gerekir.
+- **Eşikler (Beaufort):** Uyarı ≥ 39 km/s rüzgâr, ≥ 50 km/s hamle veya ≥ 2 m dalga;
+  kritik (fırtına) ≥ 62 km/s, ≥ 75 km/s hamle veya ≥ 3,5 m dalga. Önümüzdeki 24 saate bakılır.
+  Aynı bölge/seviye/gün için ikinci uyarı üretilmez.
+- **Dağıtım:** Uyarı seviyesi yalnızca `Weather` konusuna abone olanlara; kritik uyarı bölgenin tüm
+  abonelerine gider. Kritikte Android'de yüksek öncelik + `critical_alerts` kanalı (mobil uygulama bu
+  kanalı "Rahatsız Etmeyin"i delecek şekilde oluşturur), iOS'ta `time-sensitive`. Push ulaşmazsa SMS.
+  Teslimler kaydedilir; iş tekrar çalışsa da aynı kişiye ikinci kez gitmez.
+- **Sağlayıcılar:** `Push:Provider` = `Logging` | `Fcm` (`Push:FcmCredentialsPath`),
+  `Sms:Provider` = `Logging` | `Netgsm` (`Sms:Netgsm:Username/Password/Header`).
+- **Periyodik işler (Hangfire, PostgreSQL deposu, Europe/Istanbul):**
+
+  | İş | Varsayılan | Görev |
+  |---|---|---|
+  | `weather-alert-check` | `*/30 * * * *` | Abonesi olan bölgeleri kontrol et, uyarı yayınla |
+  | `account-purge` | `0 3 * * *` | 30 günü dolan silme taleplerini kalıcı sil |
+  | `data-retention` | `30 3 * * *` | Saklama süresi dolan kayıtları sil |
+
+- **Saklama süreleri (`Retention`):** OTP 1 gün, pasif yenileme belirteci 30 gün, teslim kaydı 90 gün,
+  süresi geçmiş uyarı 365 gün, 90 gün görülmeyen cihaz.
+
+`BackgroundJobs:Enabled=false` iken Hangfire başlatılmaz ve uyarı dağıtımı satır içi çalışır (testler).
 
 ### Veritabanı şeması
 
@@ -113,7 +148,7 @@ Entegrasyon testleri Docker gerektirir (`postgis/postgis:16-3.4`, `redis:7-alpin
 
 - [x] Faz 0 — İskelet
 - [x] Faz 1 — Kimlik (OTP, JWT, profil, KVKK rıza)
-- [ ] Faz 2 — Konum ve uyarı
+- [x] Faz 2 — Konum ve uyarı
 - [ ] Faz 3 — Balıkçı çekirdeği
 - [ ] Faz 4 — Pazar
 - [ ] Faz 5 — Ödeme

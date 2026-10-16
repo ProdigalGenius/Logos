@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Options;
 using SahaNet.Application.Abstractions;
+using SahaNet.Application.Alerts;
 using SahaNet.Application.Consents;
 using SahaNet.Application.Identity.Abstractions;
 using SahaNet.Application.Identity.Profile;
@@ -16,7 +17,12 @@ public sealed record PersonalDataExport(
     DateTimeOffset GeneratedAt,
     ProfileResponse Profile,
     DateTimeOffset? LastLoginAt,
-    IReadOnlyList<ConsentRecordResponse> Consents);
+    IReadOnlyList<ConsentRecordResponse> Consents,
+    IReadOnlyList<SubscriptionResponse> RegionSubscriptions,
+    IReadOnlyList<ExportedDevice> Devices);
+
+/// <summary>Cihaz token'ı dışa aktarılmaz (gizli kimlik bilgisi); yalnızca platform ve tarihler.</summary>
+public sealed record ExportedDevice(string Platform, DateTimeOffset RegisteredAt, DateTimeOffset LastSeenAt);
 
 public sealed record ExportMyDataQuery : IRequest<Result<PersonalDataExport>>;
 
@@ -24,6 +30,9 @@ internal sealed class ExportMyDataQueryHandler(
     ICurrentUser currentUser,
     IUserRepository users,
     IConsentRepository consents,
+    ISubscriptionRepository subscriptions,
+    IRegionRepository regions,
+    IDeviceRepository devices,
     IDateTimeProvider clock)
     : IRequestHandler<ExportMyDataQuery, Result<PersonalDataExport>>
 {
@@ -38,12 +47,16 @@ internal sealed class ExportMyDataQueryHandler(
         var user = userResult.Value;
         var history = await consents.GetUserConsentsAsync(user.Id, cancellationToken);
 
-        // Faz 2+: modüller (av noktası, av günlüğü ...) kendi verilerini bu dışa aktarıma ekleyecek.
+        // Faz 3+: modüller (av noktası, av günlüğü ...) kendi verilerini bu dışa aktarıma ekleyecek.
         return Result.Success(new PersonalDataExport(
             clock.UtcNow,
             user.ToResponse(),
             user.LastLoginAt,
-            history.OrderBy(c => c.RecordedAt).Select(c => c.ToResponse()).ToList()));
+            history.OrderBy(c => c.RecordedAt).Select(c => c.ToResponse()).ToList(),
+            await SubscriptionViews.BuildAsync(user.Id, subscriptions, regions, cancellationToken),
+            (await devices.GetByUserAsync(user.Id, cancellationToken))
+                .Select(d => new ExportedDevice(d.Platform.ToString(), d.CreatedAt, d.LastSeenAt))
+                .ToList()));
     }
 }
 

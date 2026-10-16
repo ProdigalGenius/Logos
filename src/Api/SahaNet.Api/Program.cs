@@ -1,6 +1,9 @@
 using System.Threading.RateLimiting;
+using Hangfire;
+using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -10,6 +13,7 @@ using SahaNet.Api.Infrastructure;
 using SahaNet.Application;
 using SahaNet.Application.Identity.Abstractions;
 using SahaNet.Infrastructure;
+using SahaNet.Infrastructure.Options;
 using SahaNet.Modules.Fishing;
 using Serilog;
 
@@ -90,6 +94,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+var jobOptions = app.Services.GetRequiredService<IOptions<BackgroundJobOptions>>().Value;
+if (jobOptions.Enabled && jobOptions.DashboardEnabled)
+{
+    // Yalnızca sunucunun kendisinden erişilebilir; Faz 7'de yönetici rolüne bağlanacak.
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions { Authorization = [new LocalRequestsOnlyAuthorizationFilter()] });
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
@@ -111,6 +122,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 app.MapCatalogEndpoints();
 app.MapAuthEndpoints();
 app.MapMeEndpoints();
+app.MapAlertEndpoints();
 app.MapFishingModule();
 
 await app.RunAsync();

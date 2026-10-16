@@ -6,9 +6,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using SahaNet.Application.Alerts;
 using SahaNet.Application.Identity.Abstractions;
 using SahaNet.Application.Identity.Auth;
+using SahaNet.Application.Weather;
+using SahaNet.Domain.Geo;
 using SahaNet.Domain.Identity;
+using SahaNet.Domain.Notifications;
 using Testcontainers.PostgreSql;
 using Testcontainers.Redis;
 
@@ -30,6 +34,10 @@ public sealed class SahaNetApiFactory : WebApplicationFactory<Program>, IAsyncLi
 
     /// <summary>Gönderilen SMS'leri yakalar; testler OTP kodunu buradan okur.</summary>
     public CapturingSmsSender Sms { get; } = new();
+
+    public ScriptedWeatherProvider Weather { get; } = new();
+
+    public CapturingPushSender Push { get; } = new();
 
     public async Task InitializeAsync()
     {
@@ -53,10 +61,13 @@ public sealed class SahaNetApiFactory : WebApplicationFactory<Program>, IAsyncLi
         builder.UseSetting("PersonalData:EncryptionKey", Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));
         builder.UseSetting("PersonalData:LookupKey", Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));
         builder.UseSetting("RateLimiting:OtpPermitPerMinute", "1000");
+        builder.UseSetting("BackgroundJobs:Enabled", "false");
 
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<ISmsSender>(Sms);
+            services.AddSingleton<IPushSender>(Push);
+            services.AddSingleton<IWeatherProvider>(Weather);
         });
     }
 
@@ -96,6 +107,40 @@ public sealed class CapturingSmsSender : ISmsSender
     {
         var message = _lastMessageByPhone[PhoneNumber.Create(phone).Value.Value];
         return System.Text.RegularExpressions.Regex.Match(message, "[0-9]{6}").Value;
+    }
+}
+
+/// <summary>Varsayılan sakin hava; fırtına yalnızca işaretlenen noktalara verilir.</summary>
+public sealed class ScriptedWeatherProvider : IWeatherProvider
+{
+    private readonly ConcurrentDictionary<(double, double), bool> _stormy = new();
+
+    public void MakeStormy(double latitude, double longitude) => _stormy[(latitude, longitude)] = true;
+
+    public Task<WeatherForecast> GetForecastAsync(GeoPoint location, int days, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(location);
+        var stormy = _stormy.ContainsKey((location.Latitude, location.Longitude));
+        var now = DateTimeOffset.UtcNow;
+        var start = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, 0, 0, TimeSpan.Zero);
+        var hours = Enumerable.Range(0, days * 24)
+            .Select(i => stormy && i is >= 2 and <= 5
+                ? new WeatherHour(start.AddHours(i), 70, 95, 220, 4.2, 230, 7)
+                : new WeatherHour(start.AddHours(i), 12, 18, 220, 0.6, 230, 4))
+            .ToList();
+        return Task.FromResult(new WeatherForecast(location, now, hours));
+    }
+}
+
+public sealed class CapturingPushSender : IPushSender
+{
+    public ConcurrentBag<(string Token, PushMessage Message)> Sent { get; } = [];
+
+    public Task<PushResult> SendAsync(DeviceRegistration device, PushMessage message, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(device);
+        Sent.Add((device.Token, message));
+        return Task.FromResult(PushResult.Sent);
     }
 }
 
