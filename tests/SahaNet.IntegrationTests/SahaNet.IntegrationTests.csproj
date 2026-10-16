@@ -18,6 +18,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Testcontainers.PostgreSql" />
     <PackageReference Include="Testcontainers.Redis" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Api\SahaNet.Api\SahaNet.Api.csproj" />

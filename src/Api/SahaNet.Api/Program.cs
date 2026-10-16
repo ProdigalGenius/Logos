@@ -3,15 +3,18 @@ using Hangfire;
 using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using SahaNet.Api.Endpoints;
 using SahaNet.Api.Health;
+using SahaNet.Api.Hubs;
 using SahaNet.Api.Infrastructure;
 using SahaNet.Application;
 using SahaNet.Application.Identity.Abstractions;
+using SahaNet.Application.Market;
 using SahaNet.Infrastructure;
 using SahaNet.Infrastructure.Options;
 using SahaNet.Modules.Fishing;
@@ -31,7 +34,12 @@ builder.Services
     .AddFishingModule(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
+builder.Services.AddScoped<HttpCurrentUser>();
+builder.Services.AddScoped<ICurrentUser>(sp => sp.GetRequiredService<HttpCurrentUser>());
+
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, SubjectUserIdProvider>();
+builder.Services.AddSingleton<IChatRealtime, SignalRChatRealtime>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 builder.Services.ConfigureOptions<ConfigureJwtBearer>();
@@ -49,6 +57,18 @@ builder.Services.AddRateLimiter(options =>
             {
                 PermitLimit = otpPermitPerMinute,
                 Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+            }));
+
+    // Sohbet: kullanıcı başına (ek olarak Application katmanında dakikalık mesaj sınırı var).
+    options.AddPolicy(MarketEndpoints.ChatRateLimitPolicy, context =>
+        RateLimitPartition.GetTokenBucketLimiter(
+            context.User.FindFirst("sub")?.Value ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 10,
+                TokensPerPeriod = 1,
+                ReplenishmentPeriod = TimeSpan.FromSeconds(3),
                 QueueLimit = 0,
             }));
 });
@@ -123,6 +143,8 @@ app.MapCatalogEndpoints();
 app.MapAuthEndpoints();
 app.MapMeEndpoints();
 app.MapAlertEndpoints();
+app.MapMarketEndpoints();
+app.MapHub<ChatHub>(ChatHub.Path);
 app.MapFishingModule();
 
 await app.RunAsync();

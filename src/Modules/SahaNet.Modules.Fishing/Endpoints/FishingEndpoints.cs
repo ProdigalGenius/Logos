@@ -38,6 +38,18 @@ internal static class FishingEndpoints
             .WithSummary("Av yasakları takvimi (taslak veri, resmi tebliğle doğrulanmalı).")
             .AllowAnonymous();
 
+        // ---- Hal fiyatları ----
+        group.MapGet("/prices", async (string? species, string? province, int? days, ISender sender, CancellationToken ct) =>
+                TypedResults.Ok(await sender.Send(new GetMarketPricesQuery(species, province, days ?? 7), ct)))
+            .WithName("GetMarketPrices")
+            .WithSummary("Günlük hal fiyatları (TL/kg, kullanıcı bildirimlerinin medyanı).")
+            .AllowAnonymous();
+
+        group.MapPost("/prices", async (ReportMarketPriceCommand command, ISender sender, CancellationToken ct) =>
+                (await sender.Send(command, ct)).ToHttp())
+            .WithName("ReportMarketPrice")
+            .RequireAuthorization();
+
         // ---- Av noktası defteri ----
         var spots = group.MapGroup("/spots").RequireAuthorization();
 

@@ -23,6 +23,21 @@ internal sealed class ConfigureJwtBearer(IOptions<JwtOptions> jwt) : IConfigureN
             ClockSkew = TimeSpan.FromSeconds(30),
             NameClaimType = "sub",
         };
+
+        // WebSocket (SignalR) bağlantıları başlık gönderemez; belirteç sorgu dizesinden okunur.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(token) && context.HttpContext.Request.Path.StartsWithSegments("/hubs", StringComparison.Ordinal))
+                {
+                    context.Token = token;
+                }
+
+                return Task.CompletedTask;
+            },
+        };
     }
 
     public void Configure(JwtBearerOptions options) => Configure(Options.DefaultName, options);

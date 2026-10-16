@@ -75,6 +75,15 @@ docker compose --profile api up --build
 | `GET/POST/PUT/DELETE /api/fishing/spots` | Av noktası defteri (şifreli, varsayılan gizli) |
 | `POST/DELETE /api/fishing/spots/{id}/shares` | Telefonla paylaşım (konum rızası gerekir) |
 | `GET/POST/DELETE /api/fishing/catches` · `GET .../stats` | Av günlüğü ve sezon istatistiği |
+| `GET /api/market/categories?niche=` | Modüllerin ilan kategorileri ve alan şemaları |
+| `GET /api/market/listings?niche=&category=&region=&type=&q=` | İlan arama |
+| `POST /api/market/listings` · `POST .../{id}/cancel` | İlan ver (sabit fiyat / teklif / ihale) · kapat |
+| `POST /api/market/listings/{id}/offers` | Teklif, ön sipariş veya ihale teklifi |
+| `POST /api/market/offers/{id}/accept\|reject\|withdraw` | Teklif kararları |
+| `GET /api/me/listings` · `GET /api/me/offers` | İlanlarım · tekliflerim |
+| `GET/POST /api/conversations` · `GET/POST .../{id}/messages` | Sohbetler ve mesajlar |
+| `/hubs/chat` (SignalR) | Canlı mesaj (`messageReceived`), `SendMessage(conversationId, text)` |
+| `GET/POST /api/fishing/prices` | Hal fiyatları (medyan) |
 | `/hangfire` | Arka plan işleri paneli (Development, yalnızca localhost) |
 | `/swagger` | OpenAPI arayüzü (Development) |
 
@@ -153,6 +162,29 @@ tablolarına FK yok). Çekirdekle sözleşmeler üzerinden konuşur:
 > Tür asgari boyları ve yasak dönemleri **taslaktır**; yürürlükteki Ticari Amaçlı Su Ürünleri
 > Avcılığı Tebliği ile doğrulanmalıdır (Faz 7'de yönetici panelinden güncellenecek).
 
+### Pazar ve mesajlaşma (Faz 4)
+
+- **İlan türleri:** `FixedPrice` (alıcı miktar belirterek ön sipariş/rezervasyon ister; kabul edilen
+  miktar stoktan düşer), `OfferBased` (satıcı teklif seçer, kalanlar otomatik reddedilir), `Auction`
+  (en yüksek teklif + asgari artış; son 2 dakikadaki teklif süreyi uzatır; süre sonunda gizli taban
+  fiyatı geçen teklif kazanır, `listing-close` işi dakikalık çalışır). İhale teklifi geri çekilemez.
+- **Eşzamanlılık:** İlan satırı her teklifte güncellenir ve PostgreSQL `xmin` satır sürümüyle korunur;
+  aynı anda gelen iki teklif çakışırsa biri 409 alır.
+- **Kategori şeması:** Modüller `IListingCategoryProvider` ile kategori ve alan tanımı verir; çekirdek
+  alanları doğrular ve normalize eder (sayılarda virgül, tarihler UTC). Balıkçı modülü: `fresh-fish`
+  (tür, teslim limanı, teslim zamanı, av aracı) ve `fishing-equipment` (ağ/motor/tekne, durum, marka …).
+- **Gizlilik:** Teklif ayrıntılarını yalnızca satıcı ve teklif sahibi görür; ihalede herkes yalnızca en
+  yüksek teklif tutarını görür.
+- **Bildirim:** Yeni teklif, kabul/ret, teklifin geçilmesi ve yeni mesaj için push.
+- **Mesajlaşma:** İlan başına tek birebir sohbet; okunmamış sayısı; metin + sesli/foto (https medya
+  adresi). SignalR (`/hubs/chat`, JWT `access_token` sorgu parametresiyle), REST ile de gönderilebilir.
+  Kullanıcı başına dakikada 20 mesaj + token bucket hız sınırı.
+- **WhatsApp:** Her ilan yanıtında `shareUrl` (`https://wa.me/?text=…`).
+- **Hal fiyatları:** Kullanıcılar tür/il/gün için TL/kg bildirir (kişi başı tek kayıt); günlük özet
+  medyan, en düşük, en yüksek ve bildirim sayısıyla döner.
+- **KVKK:** Dışa aktarımda `modules.market` (ilanlar, teklifler, gönderilen mesajlar); hesap silinince
+  kayıtlar FK ile silinir.
+
 ### Veritabanı şeması
 
 `Database:ApplyMigrationsOnStartup=true` (Development) iken: migration varsa uygulanır, yoksa
@@ -182,7 +214,7 @@ Entegrasyon testleri Docker gerektirir (`postgis/postgis:16-3.4`, `redis:7-alpin
 - [x] Faz 1 — Kimlik (OTP, JWT, profil, KVKK rıza)
 - [x] Faz 2 — Konum ve uyarı
 - [x] Faz 3 — Balıkçı çekirdeği
-- [ ] Faz 4 — Pazar
+- [x] Faz 4 — Pazar
 - [ ] Faz 5 — Ödeme
 - [ ] Faz 6 — Mobil (MAUI)
 - [ ] Faz 7 — Yönetim

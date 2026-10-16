@@ -4,6 +4,15 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esas alınır
 
 ## [Unreleased]
 
+### Faz 4 — Pazar
+- Çekirdek ilan aggregate'i: sabit fiyat (kısmi miktar ön sipariş), teklif toplama, süreli ihale (asgari artış, son dakika uzatma, gizli taban fiyat).
+- `xmin` satır sürümüyle eşzamanlı teklif koruması; dakikalık `listing-close` Hangfire işi.
+- `IListingCategoryProvider` ile modül bazında genişleyen kategori/alan şeması ve doğrulayıcı.
+- Balıkçı modülü: `fresh-fish` ve `fishing-equipment` kategorileri, hal fiyatları (medyan).
+- Mesajlaşma: sohbet, mesaj, okunmamış sayısı, SignalR hub'ı, hız sınırları, push bildirimleri.
+- WhatsApp paylaşım linki; pazar verisi KVKK dışa aktarımına eklendi.
+- Düzeltme: av noktası paylaşımında owned kayda üretilen anahtar (yanlış UPDATE → 409).
+
 ### Faz 3 — Balıkçı çekirdeği
 - Modül kendi `FishingDbContext`'i ve `fishing` şemasıyla; çekirdeğe `IPersonalDataSection` ve `IModuleSchemaInitializer` sözleşmeleri eklendi.
 - Liman bazlı deniz durumu: Beaufort, Türkçe rüzgâr adları, yerel gün özeti, Go/Caution/NoGo kararı, aktif uyarılar.

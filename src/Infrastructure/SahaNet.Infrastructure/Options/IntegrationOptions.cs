@@ -77,6 +77,10 @@ public sealed class BackgroundJobOptions
     [Required]
     public string RetentionCron { get; init; } = "30 3 * * *";
 
+    /// <summary>Süresi dolan ilan ve ihaleleri kapatma (dakikalık).</summary>
+    [Required]
+    public string ListingCloseCron { get; init; } = "* * * * *";
+
     [Required]
     public string TimeZone { get; init; } = "Europe/Istanbul";
 }

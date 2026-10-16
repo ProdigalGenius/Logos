@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using SahaNet.Application.Abstractions;
 using SahaNet.Application.Alerts;
 using SahaNet.Application.Identity.Abstractions;
+using SahaNet.Application.Market;
 using SahaNet.Application.Retention;
 using SahaNet.Application.Weather;
 using SahaNet.Infrastructure.Jobs;
@@ -76,6 +77,8 @@ public static class DependencyInjection
         services.AddScoped<IDeviceRepository, DeviceRepository>();
         services.AddScoped<IAlertRepository, AlertRepository>();
         services.AddScoped<IDataRetentionStore, DataRetentionStore>();
+        services.AddScoped<IListingRepository, ListingRepository>();
+        services.AddScoped<IConversationRepository, ConversationRepository>();
     }
 
     private static void AddSecurity(IServiceCollection services)

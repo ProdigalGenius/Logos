@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SahaNet.Application.Market;
 using SahaNet.Application.Modules;
 using SahaNet.Modules.Fishing.Application;
 using SahaNet.Modules.Fishing.Endpoints;
@@ -34,6 +35,7 @@ public static class FishingModule
 
         services.AddScoped<IModuleSchemaInitializer, FishingSchemaInitializer>();
         services.AddScoped<IPersonalDataSection, FishingPersonalDataSection>();
+        services.AddSingleton<IListingCategoryProvider, FishingListingCategories>();
 
         return services;
     }

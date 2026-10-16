@@ -22,6 +22,8 @@ internal sealed class FishingDbContext(DbContextOptions<FishingDbContext> option
 
     public DbSet<CatchEntry> Catches => Set<CatchEntry>();
 
+    public DbSet<MarketPrice> MarketPrices => Set<MarketPrice>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(Schema);
@@ -106,7 +108,22 @@ internal sealed class FishingDbContext(DbContextOptions<FishingDbContext> option
             b.Property(c => c.Notes).HasMaxLength(CatchEntry.NotesMaxLength);
             b.HasIndex(c => new { c.UserId, c.CaughtAt });
         });
+
+        ConfigureMarketPrices(modelBuilder);
     }
+
+    private static void ConfigureMarketPrices(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<MarketPrice>(b =>
+        {
+            b.ToTable("market_prices");
+            b.HasKey(p => p.Id);
+            b.Property(p => p.Id).ValueGeneratedNever();
+            b.Property(p => p.SpeciesCode).HasMaxLength(32).IsRequired();
+            b.Property(p => p.ProvinceCode).HasMaxLength(2).IsRequired();
+            b.Property(p => p.PricePerKg).HasPrecision(12, 2);
+            b.HasIndex(p => new { p.Date, p.SpeciesCode, p.ProvinceCode });
+            b.HasIndex(p => new { p.ReportedBy, p.Date, p.SpeciesCode, p.ProvinceCode }).IsUnique();
+        });
 
     private static GeoPoint ParsePoint(string value)
     {

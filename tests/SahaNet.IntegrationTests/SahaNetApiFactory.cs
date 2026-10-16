@@ -74,6 +74,17 @@ public sealed class SahaNetApiFactory : WebApplicationFactory<Program>, IAsyncLi
     /// <summary>Her test için benzersiz geçerli cep telefonu numarası.</summary>
     public static string NewPhone() => "05" + RandomNumberGenerator.GetInt32(100_000_000, 999_999_999).ToString(System.Globalization.CultureInfo.InvariantCulture);
 
+    /// <summary>Giriş + zorunlu rızalar + balıkçı nişi ile kurulum (ilan verebilen kullanıcı).</summary>
+    public async Task<(HttpClient Client, AuthResponse Auth)> LoginOnboardedAsync(string displayName = "Reis")
+    {
+        var (client, auth) = await LoginAsync();
+        var documents = await client.GetFromJsonAsync<List<SahaNet.Application.Consents.ConsentDocumentResponse>>("/api/consents/documents");
+        var decisions = documents!.Where(d => d.IsRequired).Select(d => new SahaNet.Application.Consents.ConsentDecision(d.Id, true)).ToList();
+        (await client.PostAsJsonAsync("/api/me/consents", new SahaNet.Application.Consents.RecordConsentsCommand(decisions, "mobile"))).EnsureSuccessStatusCode();
+        (await client.PostAsJsonAsync("/api/me/onboarding", new { nicheKey = "fishing", regionCode = "34", displayName })).EnsureSuccessStatusCode();
+        return (client, auth);
+    }
+
     /// <summary>OTP iste + doğrula; oturum açmış istemci döndürür.</summary>
     public async Task<(HttpClient Client, AuthResponse Auth)> LoginAsync(string? phone = null)
     {

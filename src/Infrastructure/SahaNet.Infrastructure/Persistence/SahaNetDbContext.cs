@@ -9,6 +9,7 @@ using SahaNet.Domain.Consents;
 using SahaNet.Domain.Events;
 using SahaNet.Domain.Geo;
 using SahaNet.Domain.Identity;
+using SahaNet.Domain.Market;
 using SahaNet.Domain.Notifications;
 using SahaNet.Infrastructure.Persistence.Configurations;
 
@@ -26,6 +27,7 @@ public sealed class SahaNetDbContext(
     public const string CoreSchema = "core";
     public const string IdentitySchema = "identity";
     public const string AlertsSchema = "alerts";
+    public const string MarketSchema = "market";
 
     public DbSet<User> Users => Set<User>();
 
@@ -46,6 +48,14 @@ public sealed class SahaNetDbContext(
     public DbSet<Alert> Alerts => Set<Alert>();
 
     public DbSet<AlertDelivery> AlertDeliveries => Set<AlertDelivery>();
+
+    public DbSet<Listing> Listings => Set<Listing>();
+
+    public DbSet<Offer> Offers => Set<Offer>();
+
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+
+    public DbSet<ChatMessage> Messages => Set<ChatMessage>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -77,6 +87,10 @@ public sealed class SahaNetDbContext(
         modelBuilder.ApplyConfiguration(new DeviceRegistrationConfiguration());
         modelBuilder.ApplyConfiguration(new AlertConfiguration());
         modelBuilder.ApplyConfiguration(new AlertDeliveryConfiguration());
+        modelBuilder.ApplyConfiguration(new ListingConfiguration());
+        modelBuilder.ApplyConfiguration(new OfferConfiguration());
+        modelBuilder.ApplyConfiguration(new ConversationConfiguration());
+        modelBuilder.ApplyConfiguration(new ChatMessageConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

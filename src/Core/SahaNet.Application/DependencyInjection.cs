@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using SahaNet.Application.Behaviors;
 using SahaNet.Application.Identity.Auth;
+using SahaNet.Application.Market;
 using SahaNet.Application.Options;
 
 namespace SahaNet.Application;
@@ -28,7 +29,11 @@ public static class DependencyInjection
         AddValidatedOptions<AlertOptions>(services, AlertOptions.SectionName);
         services.AddOptions<RetentionOptions>().BindConfiguration(RetentionOptions.SectionName);
 
+        services.AddOptions<MarketOptions>().BindConfiguration(MarketOptions.SectionName);
+
         services.AddScoped<TokenIssuer>();
+        services.AddScoped<IUserNotifier, PushUserNotifier>();
+        services.AddScoped<SahaNet.Application.Modules.IPersonalDataSection, MarketPersonalDataSection>();
 
         return services;
     }

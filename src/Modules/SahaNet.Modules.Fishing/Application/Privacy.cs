@@ -44,6 +44,7 @@ internal sealed class DeleteFishingDataOnUserPurged(FishingDbContext db) : INoti
         var userId = notification.DomainEvent.UserId;
 
         await db.Catches.Where(c => c.UserId == userId).ExecuteDeleteAsync(cancellationToken);
+        await db.MarketPrices.Where(p => p.ReportedBy == userId).ExecuteDeleteAsync(cancellationToken);
 
         // Başkalarının bu kullanıcıyla yaptığı paylaşımlar ve kullanıcının kendi noktaları.
         var spots = await db.Spots.Where(s => s.OwnerId == userId || s.Shares.Any(x => x.UserId == userId)).ToListAsync(cancellationToken);
