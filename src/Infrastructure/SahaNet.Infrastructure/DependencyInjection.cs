@@ -8,10 +8,12 @@ using SahaNet.Application.Abstractions;
 using SahaNet.Application.Alerts;
 using SahaNet.Application.Identity.Abstractions;
 using SahaNet.Application.Market;
+using SahaNet.Application.Payments;
 using SahaNet.Application.Retention;
 using SahaNet.Application.Weather;
 using SahaNet.Infrastructure.Jobs;
 using SahaNet.Infrastructure.Options;
+using SahaNet.Infrastructure.Payments;
 using SahaNet.Infrastructure.Persistence;
 using SahaNet.Infrastructure.Persistence.Repositories;
 using SahaNet.Infrastructure.Push;
@@ -44,6 +46,11 @@ public static class DependencyInjection
         AddRedis(services);
         AddMessaging(services, configuration);
         AddWeather(services);
+
+        // Gerçek sağlayıcı (iyzico/PayTR pazaryeri) adaptörü üye işyeri bilgileriyle eklenecek.
+        services.AddSingleton<SandboxPaymentGateway>();
+        services.AddSingleton<IPaymentGateway>(sp => sp.GetRequiredService<SandboxPaymentGateway>());
+        services.AddSingleton(sp => new SandboxPaymentGatewayAccessor(sp.GetRequiredService<SandboxPaymentGateway>()));
         AddBackgroundJobs(services, configuration);
 
         services.AddHealthChecks()
@@ -79,6 +86,7 @@ public static class DependencyInjection
         services.AddScoped<IDataRetentionStore, DataRetentionStore>();
         services.AddScoped<IListingRepository, ListingRepository>();
         services.AddScoped<IConversationRepository, ConversationRepository>();
+        services.AddScoped<IPaymentOrderRepository, PaymentOrderRepository>();
     }
 
     private static void AddSecurity(IServiceCollection services)

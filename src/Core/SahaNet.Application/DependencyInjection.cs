@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddOptions<RetentionOptions>().BindConfiguration(RetentionOptions.SectionName);
 
         services.AddOptions<MarketOptions>().BindConfiguration(MarketOptions.SectionName);
+        AddValidatedOptions<SahaNet.Application.Payments.PaymentOptions>(services, SahaNet.Application.Payments.PaymentOptions.SectionName);
 
         services.AddScoped<TokenIssuer>();
         services.AddScoped<IUserNotifier, PushUserNotifier>();

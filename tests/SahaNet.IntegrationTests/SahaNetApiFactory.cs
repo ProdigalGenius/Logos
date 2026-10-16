@@ -62,6 +62,7 @@ public sealed class SahaNetApiFactory : WebApplicationFactory<Program>, IAsyncLi
         builder.UseSetting("PersonalData:LookupKey", Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));
         builder.UseSetting("RateLimiting:OtpPermitPerMinute", "1000");
         builder.UseSetting("BackgroundJobs:Enabled", "false");
+        builder.UseSetting("Identity:AdminPhones:0", AdminPhone);
 
         builder.ConfigureTestServices(services =>
         {
@@ -70,6 +71,9 @@ public sealed class SahaNetApiFactory : WebApplicationFactory<Program>, IAsyncLi
             services.AddSingleton<IWeatherProvider>(Weather);
         });
     }
+
+    /// <summary>Girişte yönetici rolü alan test numarası.</summary>
+    public const string AdminPhone = "05000000001";
 
     /// <summary>Her test için benzersiz geçerli cep telefonu numarası.</summary>
     public static string NewPhone() => "05" + RandomNumberGenerator.GetInt32(100_000_000, 999_999_999).ToString(System.Globalization.CultureInfo.InvariantCulture);

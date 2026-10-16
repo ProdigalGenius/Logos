@@ -17,6 +17,7 @@ using SahaNet.Application.Identity.Abstractions;
 using SahaNet.Application.Market;
 using SahaNet.Infrastructure;
 using SahaNet.Infrastructure.Options;
+using SahaNet.Infrastructure.Security;
 using SahaNet.Modules.Fishing;
 using Serilog;
 
@@ -43,7 +44,8 @@ builder.Services.AddSingleton<IChatRealtime, SignalRChatRealtime>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 builder.Services.ConfigureOptions<ConfigureJwtBearer>();
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+    options.AddPolicy(JwtTokenClaims.AdminPolicy, policy => policy.RequireClaim(JwtTokenClaims.Role, "Admin")));
 
 // OTP uç noktaları için IP bazlı ek koruma (numara bazlı limitler Application katmanında).
 var otpPermitPerMinute = builder.Configuration.GetValue("RateLimiting:OtpPermitPerMinute", 10);
@@ -103,6 +105,14 @@ builder.Services.AddOpenTelemetry()
         }
     });
 
+// Gerçek para akışı için sandbox ödeme sağlayıcısı yalnızca geliştirme/test ortamında kabul edilir.
+var paymentSandbox = builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing");
+if (!paymentSandbox)
+{
+    throw new InvalidOperationException(
+        "Üretim ortamı için gerçek ödeme sağlayıcısı (iyzico/PayTR) adaptörü yapılandırılmadı; sandbox ile çalıştırılamaz.");
+}
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -144,6 +154,7 @@ app.MapAuthEndpoints();
 app.MapMeEndpoints();
 app.MapAlertEndpoints();
 app.MapMarketEndpoints();
+app.MapPaymentEndpoints(paymentSandbox);
 app.MapHub<ChatHub>(ChatHub.Path);
 app.MapFishingModule();
 

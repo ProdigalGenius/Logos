@@ -30,6 +30,11 @@ internal sealed class JwtTokenService(IOptions<JwtOptions> options, IDateTimePro
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
+        if (user.Role != UserRole.User)
+        {
+            claims.Add(new Claim(JwtTokenClaims.Role, user.Role.ToString()));
+        }
+
         if (user.NicheKey is not null)
         {
             claims.Add(new Claim(NicheClaim, user.NicheKey));

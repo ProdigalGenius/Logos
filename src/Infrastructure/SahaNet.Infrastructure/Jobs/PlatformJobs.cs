@@ -3,6 +3,7 @@ using MediatR;
 using SahaNet.Application.Alerts;
 using SahaNet.Application.Identity.Privacy;
 using SahaNet.Application.Market;
+using SahaNet.Application.Payments;
 using SahaNet.Application.Retention;
 
 namespace SahaNet.Infrastructure.Jobs;
@@ -14,6 +15,7 @@ public sealed class PlatformJobs(ISender sender)
     public const string AccountPurgeJobId = "account-purge";
     public const string RetentionJobId = "data-retention";
     public const string ListingCloseJobId = "listing-close";
+    public const string PaymentMaintenanceJobId = "payment-maintenance";
 
     [DisableConcurrentExecution(timeoutInSeconds: 600)]
     [AutomaticRetry(Attempts = 0)]
@@ -32,6 +34,11 @@ public sealed class PlatformJobs(ISender sender)
     [AutomaticRetry(Attempts = 0)]
     public Task CloseDueListingsAsync(CancellationToken cancellationToken) =>
         sender.Send(new CloseDueListingsCommand(), cancellationToken);
+
+    [DisableConcurrentExecution(timeoutInSeconds: 240)]
+    [AutomaticRetry(Attempts = 0)]
+    public Task RunPaymentMaintenanceAsync(CancellationToken cancellationToken) =>
+        sender.Send(new RunPaymentMaintenanceCommand(), cancellationToken);
 
     [DisableConcurrentExecution(timeoutInSeconds: 600)]
     public Task ApplyRetentionAsync(CancellationToken cancellationToken) =>

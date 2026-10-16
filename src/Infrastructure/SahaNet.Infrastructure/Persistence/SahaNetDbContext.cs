@@ -11,6 +11,7 @@ using SahaNet.Domain.Geo;
 using SahaNet.Domain.Identity;
 using SahaNet.Domain.Market;
 using SahaNet.Domain.Notifications;
+using SahaNet.Domain.Payments;
 using SahaNet.Infrastructure.Persistence.Configurations;
 
 namespace SahaNet.Infrastructure.Persistence;
@@ -28,6 +29,7 @@ public sealed class SahaNetDbContext(
     public const string IdentitySchema = "identity";
     public const string AlertsSchema = "alerts";
     public const string MarketSchema = "market";
+    public const string PaymentsSchema = "payments";
 
     public DbSet<User> Users => Set<User>();
 
@@ -56,6 +58,8 @@ public sealed class SahaNetDbContext(
     public DbSet<Conversation> Conversations => Set<Conversation>();
 
     public DbSet<ChatMessage> Messages => Set<ChatMessage>();
+
+    public DbSet<PaymentOrder> PaymentOrders => Set<PaymentOrder>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -91,6 +95,7 @@ public sealed class SahaNetDbContext(
         modelBuilder.ApplyConfiguration(new OfferConfiguration());
         modelBuilder.ApplyConfiguration(new ConversationConfiguration());
         modelBuilder.ApplyConfiguration(new ChatMessageConfiguration());
+        modelBuilder.ApplyConfiguration(new PaymentOrderConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

@@ -321,6 +321,40 @@ public sealed class Listing : AggregateRoot<Guid>
         return Result.Success();
     }
 
+    /// <summary>
+    /// Kabul edilmiş ama ödenmemiş teklifi iptal eder: miktar stoğa döner ve ilan süresi dolmadıysa
+    /// tekrar satışa açılır (ihale hariç; ihale kazananı ödemezse ilan sona erer).
+    /// </summary>
+    public Result CancelAcceptedOffer(Guid offerId, DateTimeOffset now)
+    {
+        var offer = _offers.FirstOrDefault(o => o.Id == offerId);
+        if (offer is null)
+        {
+            return Result.Failure(MarketErrors.OfferNotFound);
+        }
+
+        if (offer.Status != OfferStatus.Accepted)
+        {
+            return Result.Failure(MarketErrors.OfferNotPending);
+        }
+
+        offer.Cancel();
+        LastActivityAt = now;
+        if (Type == ListingType.Auction)
+        {
+            Status = ListingStatus.Expired;
+            return Result.Success();
+        }
+
+        RemainingQuantity += offer.Quantity;
+        if (Status == ListingStatus.Sold && now < ExpiresAt)
+        {
+            Status = ListingStatus.Active;
+        }
+
+        return Result.Success();
+    }
+
     /// <summary>Süresi dolan ilanı kapatır; ihalede en yüksek teklif taban fiyatı geçiyorsa kazanır.</summary>
     public bool CloseIfDue(DateTimeOffset now)
     {

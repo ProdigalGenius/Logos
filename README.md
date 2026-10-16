@@ -84,6 +84,12 @@ docker compose --profile api up --build
 | `GET/POST /api/conversations` · `GET/POST .../{id}/messages` | Sohbetler ve mesajlar |
 | `/hubs/chat` (SignalR) | Canlı mesaj (`messageReceived`), `SendMessage(conversationId, text)` |
 | `GET/POST /api/fishing/prices` | Hal fiyatları (medyan) |
+| `POST /api/payments/offers/{offerId}/checkout` | Kabul edilen teklif için emanetli ödeme başlat |
+| `POST /api/payments/callback` | Ödeme sağlayıcısı geri çağrısı (durum sağlayıcıdan doğrulanır) |
+| `POST /api/payments/orders/{id}/delivered\|confirm\|dispute` | Teslim ettim · teslim aldım · itiraz |
+| `GET /api/me/payments` | Ödemelerim (alıcı/satıcı) |
+| `GET /api/admin/payments/disputes` · `POST .../orders/{id}/resolve` · `GET .../commission` | Yönetici: itirazlar, karar, komisyon özeti |
+| `POST /api/payments/sandbox/{token}/pay` | YALNIZCA GELİŞTİRME: ödeme simülasyonu |
 | `/hangfire` | Arka plan işleri paneli (Development, yalnızca localhost) |
 | `/swagger` | OpenAPI arayüzü (Development) |
 
@@ -185,6 +191,31 @@ tablolarına FK yok). Çekirdekle sözleşmeler üzerinden konuşur:
 - **KVKK:** Dışa aktarımda `modules.market` (ilanlar, teklifler, gönderilen mesajlar); hesap silinince
   kayıtlar FK ile silinir.
 
+### Ödeme ve emanet (Faz 5)
+
+```
+AwaitingPayment ──öde──▶ Held ──satıcı: teslim ettim──▶ Delivered ──alıcı onayı / 48 sa──▶ Released
+      │                    │                              │
+  30 dk ödenmedi       alıcı onayı ───────────────────────┼──────────────────────────▶ Released
+      ▼                    └──────── itiraz ──────────────┴──▶ Disputed ──yönetici──▶ Released | Refunded
+  Cancelled (miktar ilana geri döner)
+```
+
+- **Komisyon:** `max(tutar × oran, asgari ücret)`, tutarı aşamaz; oran sipariş anında sabitlenir
+  (`Payments:DefaultCommissionRate`, kategori bazlı `CategoryCommissionRates`). İadede komisyon alınmaz.
+  Komisyonu ve satıcıya geçecek tutarı yalnızca satıcı ve yönetici görür.
+- **Güvenlik:** Geri çağrıdaki veriye güvenilmez; ödeme sağlayıcıdan doğrulanır, tutar karşılaştırılır,
+  geri çağrı idempotenttir. Sağlayıcı aktarımı reddederse durum kaydedilmez. Satır sürümü (`xmin`).
+- **Bakım işi** (`payment-maintenance`, 5 dk): ödenmeyenleri iptal eder (rezervasyon geri açılır),
+  itiraz süresi dolanları satıcıya aktarır.
+- **Yönetici:** `Identity:AdminPhones` listesindeki numaralar girişte `Admin` rolü alır (JWT `role`);
+  itiraz kararı ve komisyon özeti yalnızca yöneticiye açıktır. Tam rol yönetimi Faz 7'de.
+- **KVKK/VUK:** Ödeme kayıtları kullanıcıya FK ile bağlı değildir; hesap silinse de mali kayıt olarak
+  (kanuni saklama yükümlülüğü) yalnızca anlamsız kimliklerle saklanır.
+- **Sağlayıcı:** Şimdilik yalnızca `SandboxPaymentGateway` vardır. iyzico/PayTR pazaryeri adaptörü
+  (`IPaymentGateway`: checkout, doğrulama, alt üye işyerine aktarım onayı, iade) üye işyeri bilgileri ve
+  sandbox erişimiyle eklenmelidir. **Uygulama Development/Testing dışında başlatılırsa açılışta durur.**
+
 ### Veritabanı şeması
 
 `Database:ApplyMigrationsOnStartup=true` (Development) iken: migration varsa uygulanır, yoksa
@@ -215,7 +246,7 @@ Entegrasyon testleri Docker gerektirir (`postgis/postgis:16-3.4`, `redis:7-alpin
 - [x] Faz 2 — Konum ve uyarı
 - [x] Faz 3 — Balıkçı çekirdeği
 - [x] Faz 4 — Pazar
-- [ ] Faz 5 — Ödeme
+- [x] Faz 5 — Ödeme (sandbox sağlayıcı)
 - [ ] Faz 6 — Mobil (MAUI)
 - [ ] Faz 7 — Yönetim
 - [ ] Faz 8 — İkinci niş

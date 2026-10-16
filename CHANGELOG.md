@@ -4,6 +4,14 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esas alınır
 
 ## [Unreleased]
 
+### Faz 5 — Ödeme
+- `PaymentOrder` emanet durum makinesi: ödeme bekliyor → emanette → teslim → serbest bırakma; itiraz → yönetici kararı (aktarım/iade); ödenmeyen iptal.
+- Komisyon (oran + asgari ücret, kategori bazlı oran, sipariş anında sabitlenir; iadede alınmaz).
+- `IPaymentGateway` soyutlaması ve geliştirme için `SandboxPaymentGateway`; üretimde sandbox ile açılış engellendi.
+- Ödenmeyen kabul edilmiş teklif iptalinde miktar ilana geri döner (`Listing.CancelAcceptedOffer`).
+- Minimum rol modeli (`UserRole`, JWT `role`, `Admin` politikası, `Identity:AdminPhones` ile ilk yönetici).
+- `payment-maintenance` Hangfire işi; ödeme olayları için push bildirimleri; komisyon özeti.
+
 ### Faz 4 — Pazar
 - Çekirdek ilan aggregate'i: sabit fiyat (kısmi miktar ön sipariş), teklif toplama, süreli ihale (asgari artış, son dakika uzatma, gizli taban fiyat).
 - `xmin` satır sürümüyle eşzamanlı teklif koruması; dakikalık `listing-close` Hangfire işi.

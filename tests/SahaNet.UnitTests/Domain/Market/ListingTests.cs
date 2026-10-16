@@ -146,4 +146,20 @@ public class ListingTests
         conversation.ListingId.Should().BeNull();
         conversation.DomainEvents.OfType<MessageSent>().Should().ContainSingle();
     }
+
+    [Fact]
+    public void CancelAcceptedOffer_ReturnsQuantity_AndReopensListing()
+    {
+        var listing = New(ListingType.FixedPrice, quantity: 5);
+        var offer = listing.PlaceOffer(BuyerA, 300, 5, null, Now).Value;
+        listing.AcceptOffer(Seller, offer.Id, Now);
+        listing.Status.Should().Be(ListingStatus.Sold);
+
+        listing.CancelAcceptedOffer(offer.Id, Now.AddMinutes(31)).IsSuccess.Should().BeTrue();
+
+        offer.Status.Should().Be(OfferStatus.Cancelled);
+        listing.RemainingQuantity.Should().Be(5);
+        listing.Status.Should().Be(ListingStatus.Active);
+        listing.CancelAcceptedOffer(offer.Id, Now).Error.Should().Be(MarketErrors.OfferNotPending);
+    }
 }

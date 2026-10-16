@@ -9,6 +9,9 @@ public enum OfferStatus
     Rejected = 2,
     Withdrawn = 3,
     Outbid = 4,
+
+    /// <summary>Kabul edildi ama ödeme süresinde ödenmedi; miktar ilana geri döndü.</summary>
+    Cancelled = 5,
 }
 
 /// <summary>İlana verilen teklif / ön sipariş / ihale teklifi. <see cref="Listing"/> aggregate'inin parçasıdır.</summary>
@@ -63,4 +66,6 @@ public sealed class Offer : Entity<Guid>
     internal void Withdraw() => Status = OfferStatus.Withdrawn;
 
     internal void MarkOutbid() => Status = OfferStatus.Outbid;
+
+    internal void Cancel() => Status = OfferStatus.Cancelled;
 }

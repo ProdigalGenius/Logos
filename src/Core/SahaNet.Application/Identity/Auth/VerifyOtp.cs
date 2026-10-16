@@ -70,6 +70,11 @@ internal sealed class VerifyOtpCommandHandler(
         }
 
         user.RecordLogin(now);
+        if (user.Role == UserRole.User && options.Value.AdminPhones.Any(p => PhoneNumber.Create(p) is { IsSuccess: true } a && a.Value == phone))
+        {
+            user.AssignRole(UserRole.Admin);
+        }
+
         var (response, _) = tokenIssuer.Issue(user, Guid.NewGuid(), isNewUser);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

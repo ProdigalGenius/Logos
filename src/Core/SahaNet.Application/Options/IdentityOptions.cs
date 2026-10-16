@@ -28,4 +28,10 @@ public sealed class IdentityOptions
     /// <summary>OTP SMS'inde görünen marka adı (niş bazlı white-label).</summary>
     [Required]
     public string SmsBrandName { get; init; } = "SahaNet";
+
+    /// <summary>
+    /// Girişte yönetici rolü alacak telefon numaraları (ilk kurulum). Faz 7'de yönetici paneliyle
+    /// rol yönetimi eklenince boş bırakılmalı.
+    /// </summary>
+    public IReadOnlyList<string> AdminPhones { get; init; } = [];
 }

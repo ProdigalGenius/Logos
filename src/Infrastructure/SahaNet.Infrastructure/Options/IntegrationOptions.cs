@@ -81,6 +81,10 @@ public sealed class BackgroundJobOptions
     [Required]
     public string ListingCloseCron { get; init; } = "* * * * *";
 
+    /// <summary>Ödenmeyen siparişleri iptal, itiraz süresi dolanları serbest bırakma.</summary>
+    [Required]
+    public string PaymentMaintenanceCron { get; init; } = "*/5 * * * *";
+
     [Required]
     public string TimeZone { get; init; } = "Europe/Istanbul";
 }

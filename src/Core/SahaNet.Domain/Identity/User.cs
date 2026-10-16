@@ -38,6 +38,8 @@ public sealed class User : AggregateRoot<Guid>
 
     public UserStatus Status { get; private set; }
 
+    public UserRole Role { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset? LastLoginAt { get; private set; }
@@ -57,6 +59,8 @@ public sealed class User : AggregateRoot<Guid>
     }
 
     public void RecordLogin(DateTimeOffset now) => LastLoginAt = now;
+
+    public void AssignRole(UserRole role) => Role = role;
 
     public Result CompleteOnboarding(string nicheKey, string regionCode, string? displayName)
     {

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.IdentityModel.JsonWebTokens;
 using SahaNet.Application.Identity.Abstractions;
+using SahaNet.Infrastructure.Security;
 
 namespace SahaNet.Api.Infrastructure;
 
@@ -11,6 +12,8 @@ namespace SahaNet.Api.Infrastructure;
 internal sealed class HttpCurrentUser(IHttpContextAccessor accessor) : ICurrentUser
 {
     public Guid? Override { get; set; }
+
+    public bool IsAdmin => accessor.HttpContext?.User.FindFirstValue(JwtTokenClaims.Role) == "Admin";
 
     public Guid? UserId
     {
