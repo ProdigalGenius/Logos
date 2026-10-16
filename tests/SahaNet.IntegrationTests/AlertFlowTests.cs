@@ -29,7 +29,7 @@ public class AlertFlowTests(SahaNetApiFactory factory)
 
         regions.Should().HaveCount(13);
         bosphorus!.First().Region.Code.Should().Be("istanbul-bogazi");
-        bosphorus[0].DistanceKm.Should().BeLessThan(5);
+        bosphorus![0].DistanceKm.Should().BeLessThan(5);
         ankara.Should().BeEmpty();
         invalid.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
