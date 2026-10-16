@@ -53,6 +53,9 @@ internal sealed partial class FcmPushSender : IPushSender
         ArgumentNullException.ThrowIfNull(message);
 
         var critical = message.Severity == AlertSeverity.Critical;
+        // FirebaseAdmin 3.7 Token'ı Fid lehine "obsolete" işaretledi; ancak mobil uygulamanın ilettiği
+        // değer FCM kayıt token'ıdır, Firebase Installation ID değil. Fid'e geçiş mobil tarafla birlikte yapılmalı.
+#pragma warning disable CS0618
         var fcmMessage = new Message
         {
             Token = device.Token,
@@ -77,6 +80,7 @@ internal sealed partial class FcmPushSender : IPushSender
                 },
             },
         };
+#pragma warning restore CS0618
 
         try
         {
