@@ -15,6 +15,6 @@
     <Using Include="FluentAssertions" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Core\SahaNet.Application\SahaNet.Application.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\SahaNet.Infrastructure\SahaNet.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

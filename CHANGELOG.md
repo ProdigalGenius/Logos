@@ -4,6 +4,17 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esas alınır
 
 ## [Unreleased]
 
+### Faz 1 — Kimlik
+- Telefon + SMS OTP ile giriş; numara başına bekleme/saatlik limit, hatalı denemede kilit, IP bazlı rate limit.
+- JWT erişim belirteci + döndürülen (rotation) yenileme belirteci, tekrar kullanımda aile iptali.
+- `User`, `PhoneNumber`, `OtpChallenge`, `RefreshToken`, `ConsentDocument`, `UserConsent` domain modeli.
+- Onboarding: niş (modül kataloğu) ve il seçimi; zorunlu KVKK rızaları olmadan tamamlanamaz.
+- Versiyonlu, yalnızca eklenen rıza kayıtları; taslak aydınlatma/açık rıza/konum/ticari ileti metinleri.
+- KVKK: verilerimi indir, hesap silme talebi/iptali, 30 gün sonra kalıcı silme komutu.
+- Telefon numarası AES-256-GCM şifreli kolonda, HMAC arama özetiyle; loglarda otomatik maskeleme.
+- `Result`/`ErrorType` → ProblemDetails eşlemesi, doğrulama hataları için 400.
+- Birim testleri (domain, handler, kripto) ve Testcontainers ile uçtan uca kimlik akışı testleri.
+
 ### Faz 0 — İskelet
 - Clean Architecture çözüm yapısı (Domain, Application, Infrastructure, Modules.Fishing, Api).
 - Merkezi paket yönetimi (`Directory.Packages.props`); nullable açık, uyarılar hata.

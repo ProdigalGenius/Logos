@@ -3,8 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SahaNet.Application.Abstractions;
+using SahaNet.Application.Identity.Abstractions;
 using SahaNet.Infrastructure.Options;
 using SahaNet.Infrastructure.Persistence;
+using SahaNet.Infrastructure.Persistence.Repositories;
+using SahaNet.Infrastructure.Security;
+using SahaNet.Infrastructure.Sms;
 using StackExchange.Redis;
 
 namespace SahaNet.Infrastructure;
@@ -17,15 +21,11 @@ public static class DependencyInjection
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddOptions<DatabaseOptions>()
-            .Bind(configuration.GetSection(DatabaseOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.AddOptions<RedisOptions>()
-            .Bind(configuration.GetSection(RedisOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        AddValidatedOptions<DatabaseOptions>(services, DatabaseOptions.SectionName);
+        AddValidatedOptions<RedisOptions>(services, RedisOptions.SectionName);
+        AddValidatedOptions<PersonalDataOptions>(services, PersonalDataOptions.SectionName);
+        AddValidatedOptions<JwtOptions>(services, JwtOptions.SectionName);
+        services.AddOptions<SmsOptions>().BindConfiguration(SmsOptions.SectionName);
 
         services.AddDbContext<SahaNetDbContext>((sp, options) =>
         {
@@ -38,7 +38,18 @@ public static class DependencyInjection
             });
         });
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<SahaNetDbContext>());
+        services.AddHostedService<DatabaseInitializer>();
+
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IOtpChallengeRepository, OtpChallengeRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IConsentRepository, ConsentRepository>();
+
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+        services.AddSingleton<IPersonalDataProtector, AesGcmPersonalDataProtector>();
+        services.AddSingleton<IOtpCodeGenerator, OtpCodeGenerator>();
+        services.AddSingleton<ITokenService, JwtTokenService>();
+        services.AddSingleton<ISmsSender, LoggingSmsSender>();
 
         services.AddSingleton<IConnectionMultiplexer>(sp =>
         {
@@ -54,4 +65,11 @@ public static class DependencyInjection
 
         return services;
     }
+
+    private static void AddValidatedOptions<T>(IServiceCollection services, string section)
+        where T : class =>
+        services.AddOptions<T>()
+            .BindConfiguration(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 }

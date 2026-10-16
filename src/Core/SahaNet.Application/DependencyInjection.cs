@@ -1,7 +1,8 @@
 using FluentValidation;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using SahaNet.Application.Behaviors;
+using SahaNet.Application.Identity.Auth;
+using SahaNet.Application.Options;
 
 namespace SahaNet.Application;
 
@@ -21,6 +22,13 @@ public static class DependencyInjection
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
         services.AddValidatorsFromAssemblies(assemblies, includeInternalTypes: true);
+
+        services.AddOptions<IdentityOptions>()
+            .BindConfiguration(IdentityOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddScoped<TokenIssuer>();
 
         return services;
     }

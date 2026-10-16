@@ -51,9 +51,54 @@ docker compose --profile api up --build
 | `GET /health/ready` | PostgreSQL ve Redis erişilebilir mi |
 | `GET /api/modules` | Yüklü dikey modüller |
 | `GET /api/fishing/info` | Balıkçı modülü bilgisi |
+| `GET /api/regions` | İl listesi (bölge seçimi) |
+| `GET /api/consents/documents` | Yürürlükteki aydınlatma / rıza metinleri |
+| `POST /api/auth/otp/request` | Telefona SMS kodu gönder |
+| `POST /api/auth/otp/verify` | Kodu doğrula, oturum aç (yeni kullanıcıyı oluşturur) |
+| `POST /api/auth/token/refresh` | Yenileme belirtecini döndür |
+| `POST /api/auth/logout` | Oturumu kapat |
+| `GET /api/me` | Profilim |
+| `POST /api/me/consents` · `GET /api/me/consents` | Rıza kaydet / geçmişim |
+| `POST /api/me/onboarding` | Niş + il seçimi (zorunlu rızalar şart) |
+| `PUT /api/me/profile` | Ad / il güncelle |
+| `GET /api/me/export` | KVKK: verilerimi indir |
+| `DELETE /api/me` · `POST /api/me/deletion/cancel` | KVKK: hesabımı sil (30 gün) / iptal |
 | `/swagger` | OpenAPI arayüzü (Development) |
 
-Konfigürasyon Options pattern ile (`Database`, `Redis` bölümleri) okunur ve açılışta doğrulanır.
+Konfigürasyon Options pattern ile (`Database`, `Redis`, `Identity`, `Jwt`, `PersonalData`, `Sms`,
+`RateLimiting` bölümleri) okunur ve açılışta doğrulanır.
+
+### Kimlik ve KVKK (Faz 1)
+
+Kurulum 3 adım: **telefon → SMS kodu → rızalar + niş ve il seçimi**.
+
+- **OTP:** 6 haneli kod, 3 dk geçerli; yalnızca HMAC özeti saklanır. Numara başına 60 sn bekleme,
+  saatte en fazla 5 kod, 5 hatalı denemede kilit; ayrıca IP bazlı rate limit.
+- **Oturum:** 15 dk JWT + 30 gün opak yenileme belirteci (veritabanında yalnızca özeti).
+  Her yenilemede belirteç döner; eski belirteç tekrar kullanılırsa tüm aile iptal edilir.
+- **Şifreli kolon:** Telefon AES-256-GCM ile şifrelenir (`phone_encrypted`), arama HMAC-SHA256
+  özetiyle (`phone_hash`) yapılır. Anahtarlar `PersonalData:EncryptionKey` / `LookupKey`
+  (Base64, 32 bayt) üretimde gizli kasadan verilmeli.
+- **Rıza:** Metinler versiyonlu; kararlar yalnızca eklenir (geri çekme de kayıttır). Yeni sürüm
+  yayınlanınca yeniden onay gerekir. Konum paylaşımı rızası varsayılan olarak **verilmemiş**.
+- **Loglar:** Telefon numaraları Serilog enricher ile otomatik maskelenir.
+- **Silme:** `DELETE /api/me` hesabı işaretler ve tüm oturumları kapatır;
+  `PurgeDeletedAccountsCommand` 30 gün sonra kalıcı siler (Faz 2'de Hangfire ile zamanlanacak).
+
+> Seed edilen KVKK metinleri **taslaktır**; yayından önce hukuk onayı gerekir.
+
+### Veritabanı şeması
+
+`Database:ApplyMigrationsOnStartup=true` (Development) iken: migration varsa uygulanır, yoksa
+şema `EnsureCreated` ile oluşturulur. İlk migration'ı üretmek için:
+
+```bash
+dotnet tool install --global dotnet-ef
+dotnet ef migrations add Faz1_Identity -p src/Infrastructure/SahaNet.Infrastructure -s src/Api/SahaNet.Api -o Persistence/Migrations
+```
+
+Migration eklendikten sonra `EnsureCreated` ile oluşturulmuş yerel veritabanını silin
+(`docker compose down -v`).
 OTLP izleme için `OTEL_EXPORTER_OTLP_ENDPOINT` ortam değişkeni verilmesi yeterli.
 
 ## Test
@@ -67,7 +112,7 @@ Entegrasyon testleri Docker gerektirir (`postgis/postgis:16-3.4`, `redis:7-alpin
 ## Fazlar
 
 - [x] Faz 0 — İskelet
-- [ ] Faz 1 — Kimlik (OTP, JWT, profil, KVKK rıza)
+- [x] Faz 1 — Kimlik (OTP, JWT, profil, KVKK rıza)
 - [ ] Faz 2 — Konum ve uyarı
 - [ ] Faz 3 — Balıkçı çekirdeği
 - [ ] Faz 4 — Pazar

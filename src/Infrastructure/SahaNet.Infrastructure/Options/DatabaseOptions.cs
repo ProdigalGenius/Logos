@@ -11,4 +11,10 @@ public sealed class DatabaseOptions
 
     [Range(0, 10)]
     public int MaxRetryCount { get; init; } = 3;
+
+    /// <summary>
+    /// Açılışta bekleyen migration'ları uygula. Henüz migration yoksa şemayı oluşturur
+    /// (yalnızca geliştirme/test; üretimde migration bundle kullanılmalı).
+    /// </summary>
+    public bool ApplyMigrationsOnStartup { get; init; }
 }

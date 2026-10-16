@@ -1,7 +1,19 @@
 namespace SahaNet.Domain.Common;
 
-/// <summary>Bir hatanın makine tarafından okunabilir kodu ve açıklaması.</summary>
-public sealed record Error(string Code, string Message)
+/// <summary>Hatanın türü; API katmanında HTTP durum koduna eşlenir.</summary>
+public enum ErrorType
+{
+    Failure = 0,
+    Validation = 1,
+    NotFound = 2,
+    Conflict = 3,
+    Unauthorized = 4,
+    Forbidden = 5,
+    TooManyRequests = 6,
+}
+
+/// <summary>Bir hatanın makine tarafından okunabilir kodu, açıklaması ve türü.</summary>
+public sealed record Error(string Code, string Message, ErrorType Type = ErrorType.Failure)
 {
     public static readonly Error None = new(string.Empty, string.Empty);
 }
@@ -11,6 +23,8 @@ public class Result
 {
     protected Result(bool isSuccess, Error error)
     {
+        ArgumentNullException.ThrowIfNull(error);
+
         if (isSuccess == (error != Error.None))
         {
             throw new ArgumentException("Başarılı sonuç hata içeremez; başarısız sonuç hata içermelidir.", nameof(error));
