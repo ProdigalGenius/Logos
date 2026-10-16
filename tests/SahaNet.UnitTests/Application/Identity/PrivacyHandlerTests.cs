@@ -61,7 +61,7 @@ public class PrivacyHandlerTests
         var user = _h.AddUser(onboarded: true);
         _h.GrantRequiredConsents(user);
 
-        var result = await new ExportMyDataQueryHandler(_h.CurrentUser, _h.Users, _h.Consents, new InMemorySubscriptions(), new InMemoryRegions(), new InMemoryDevices(), _h.Clock)
+        var result = await new ExportMyDataQueryHandler(_h.CurrentUser, _h.Users, _h.Consents, new InMemorySubscriptions(), new InMemoryRegions(), new InMemoryDevices(), [], _h.Clock)
             .Handle(new ExportMyDataQuery(), CancellationToken.None);
 
         result.Value.Profile.Phone.Should().Be("+905321234567");

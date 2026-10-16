@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using SahaNet.Application.Abstractions;
+using SahaNet.Application.Events;
 using SahaNet.Application.Identity.Abstractions;
 using SahaNet.Domain.Common;
 using SahaNet.Domain.Consents;
@@ -62,6 +63,7 @@ internal sealed class RecordConsentsCommandHandler(
     ICurrentUser currentUser,
     IConsentRepository consents,
     IUnitOfWork unitOfWork,
+    IPublisher publisher,
     IDateTimeProvider clock)
     : IRequestHandler<RecordConsentsCommand, Result<MyConsentsResponse>>
 {
@@ -89,6 +91,12 @@ internal sealed class RecordConsentsCommandHandler(
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (added.Any(c => c.Type == ConsentType.LocationSharing && !c.Granted))
+        {
+            // KVKK: rıza geri çekilince modüller mevcut konum paylaşımlarını hemen kaldırır.
+            await publisher.Publish(DomainEventNotification.Create(new LocationSharingWithdrawn(userId)), cancellationToken);
+        }
 
         var history = await consents.GetUserConsentsAsync(userId, cancellationToken);
         var all = history.Concat(added.Where(a => history.All(h => h.Id != a.Id))).ToList();

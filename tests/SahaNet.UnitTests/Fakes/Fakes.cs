@@ -58,6 +58,24 @@ internal sealed class FakeUnitOfWork : IUnitOfWork
     }
 }
 
+internal sealed class FakePublisher : MediatR.IPublisher
+{
+    public List<object> Published { get; } = [];
+
+    public Task Publish(object notification, CancellationToken cancellationToken = default)
+    {
+        Published.Add(notification);
+        return Task.CompletedTask;
+    }
+
+    public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
+        where TNotification : MediatR.INotification
+    {
+        Published.Add(notification);
+        return Task.CompletedTask;
+    }
+}
+
 internal sealed class FakeCurrentUser : ICurrentUser
 {
     public Guid? UserId { get; set; }

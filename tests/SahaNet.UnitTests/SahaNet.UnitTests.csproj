@@ -16,5 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Infrastructure\SahaNet.Infrastructure\SahaNet.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\SahaNet.Modules.Fishing\SahaNet.Modules.Fishing.csproj" />
   </ItemGroup>
 </Project>

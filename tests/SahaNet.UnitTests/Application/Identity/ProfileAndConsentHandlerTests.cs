@@ -72,7 +72,7 @@ public class ProfileAndConsentHandlerTests
     public async Task RecordConsents_AppendsHistory_AndReportsMissing()
     {
         var user = _h.AddUser();
-        var handler = new RecordConsentsCommandHandler(_h.CurrentUser, _h.Consents, _h.UnitOfWork, _h.Clock);
+        var handler = new RecordConsentsCommandHandler(_h.CurrentUser, _h.Consents, _h.UnitOfWork, _h.Publisher, _h.Clock);
 
         var result = await handler.Handle(
             new RecordConsentsCommand([new ConsentDecision(_h.PrivacyNotice.Id, true), new ConsentDecision(_h.LocationSharing.Id, true)], "mobile"),
@@ -89,12 +89,25 @@ public class ProfileAndConsentHandlerTests
     public async Task RecordConsents_UnknownDocument_Fails()
     {
         _h.AddUser();
-        var handler = new RecordConsentsCommandHandler(_h.CurrentUser, _h.Consents, _h.UnitOfWork, _h.Clock);
+        var handler = new RecordConsentsCommandHandler(_h.CurrentUser, _h.Consents, _h.UnitOfWork, _h.Publisher, _h.Clock);
 
         var result = await handler.Handle(new RecordConsentsCommand([new ConsentDecision(Guid.NewGuid(), true)], "mobile"), CancellationToken.None);
 
         result.Error.Should().Be(ConsentErrors.DocumentNotFound);
         _h.Consents.Records.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task WithdrawingLocationConsent_PublishesEvent()
+    {
+        var user = _h.AddUser();
+        var handler = new RecordConsentsCommandHandler(_h.CurrentUser, _h.Consents, _h.UnitOfWork, _h.Publisher, _h.Clock);
+
+        await handler.Handle(new RecordConsentsCommand([new ConsentDecision(_h.LocationSharing.Id, false)], "mobile"), CancellationToken.None);
+
+        _h.Publisher.Published.Should().ContainSingle()
+            .Which.Should().BeOfType<SahaNet.Application.Events.DomainEventNotification<SahaNet.Domain.Consents.LocationSharingWithdrawn>>()
+            .Which.DomainEvent.UserId.Should().Be(user.Id);
     }
 
     [Fact]

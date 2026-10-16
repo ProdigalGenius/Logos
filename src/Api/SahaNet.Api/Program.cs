@@ -28,7 +28,7 @@ builder.Host.UseSerilog((context, services, logger) => logger
 builder.Services
     .AddApplication(typeof(FishingModule).Assembly)
     .AddInfrastructure(builder.Configuration)
-    .AddFishingModule();
+    .AddFishingModule(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();

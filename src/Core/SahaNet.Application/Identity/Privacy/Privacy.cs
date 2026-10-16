@@ -5,6 +5,7 @@ using SahaNet.Application.Alerts;
 using SahaNet.Application.Consents;
 using SahaNet.Application.Identity.Abstractions;
 using SahaNet.Application.Identity.Profile;
+using SahaNet.Application.Modules;
 using SahaNet.Application.Options;
 using SahaNet.Domain.Common;
 using SahaNet.Domain.Identity;
@@ -19,7 +20,8 @@ public sealed record PersonalDataExport(
     DateTimeOffset? LastLoginAt,
     IReadOnlyList<ConsentRecordResponse> Consents,
     IReadOnlyList<SubscriptionResponse> RegionSubscriptions,
-    IReadOnlyList<ExportedDevice> Devices);
+    IReadOnlyList<ExportedDevice> Devices,
+    IReadOnlyDictionary<string, object?> Modules);
 
 /// <summary>Cihaz token'ı dışa aktarılmaz (gizli kimlik bilgisi); yalnızca platform ve tarihler.</summary>
 public sealed record ExportedDevice(string Platform, DateTimeOffset RegisteredAt, DateTimeOffset LastSeenAt);
@@ -33,6 +35,7 @@ internal sealed class ExportMyDataQueryHandler(
     ISubscriptionRepository subscriptions,
     IRegionRepository regions,
     IDeviceRepository devices,
+    IEnumerable<IPersonalDataSection> moduleSections,
     IDateTimeProvider clock)
     : IRequestHandler<ExportMyDataQuery, Result<PersonalDataExport>>
 {
@@ -47,7 +50,12 @@ internal sealed class ExportMyDataQueryHandler(
         var user = userResult.Value;
         var history = await consents.GetUserConsentsAsync(user.Id, cancellationToken);
 
-        // Faz 3+: modüller (av noktası, av günlüğü ...) kendi verilerini bu dışa aktarıma ekleyecek.
+        var modules = new SortedDictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var section in moduleSections)
+        {
+            modules[section.Name] = await section.ExportAsync(user.Id, cancellationToken);
+        }
+
         return Result.Success(new PersonalDataExport(
             clock.UtcNow,
             user.ToResponse(),
@@ -56,7 +64,8 @@ internal sealed class ExportMyDataQueryHandler(
             await SubscriptionViews.BuildAsync(user.Id, subscriptions, regions, cancellationToken),
             (await devices.GetByUserAsync(user.Id, cancellationToken))
                 .Select(d => new ExportedDevice(d.Platform.ToString(), d.CreatedAt, d.LastSeenAt))
-                .ToList()));
+                .ToList(),
+            modules));
     }
 }
 

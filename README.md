@@ -69,6 +69,12 @@ docker compose --profile api up --build
 | `GET /api/alerts/active?regionId=` | Aktif uyarılar |
 | `GET/PUT/DELETE /api/me/subscriptions/{regionId}` | Bölge aboneliği (konular: Weather, Market, Community) |
 | `POST /api/me/devices` · `POST /api/me/devices/unregister` | Push (FCM) cihaz kaydı |
+| `GET /api/fishing/ports?lat=&lon=` | Limanlar (konuma göre sıralı) |
+| `GET /api/fishing/ports/{code}/sea-status?days=` | Deniz durumu: günlük özet, Beaufort, rüzgâr adı, çıkış kararı |
+| `GET /api/fishing/species` · `GET /api/fishing/bans` | Tür kataloğu (asgari boy) ve av yasakları takvimi |
+| `GET/POST/PUT/DELETE /api/fishing/spots` | Av noktası defteri (şifreli, varsayılan gizli) |
+| `POST/DELETE /api/fishing/spots/{id}/shares` | Telefonla paylaşım (konum rızası gerekir) |
+| `GET/POST/DELETE /api/fishing/catches` · `GET .../stats` | Av günlüğü ve sezon istatistiği |
 | `/hangfire` | Arka plan işleri paneli (Development, yalnızca localhost) |
 | `/swagger` | OpenAPI arayüzü (Development) |
 
@@ -122,6 +128,31 @@ Kurulum 3 adım: **telefon → SMS kodu → rızalar + niş ve il seçimi**.
 
 `BackgroundJobs:Enabled=false` iken Hangfire başlatılmaz ve uyarı dağıtımı satır içi çalışır (testler).
 
+### Balıkçı modülü (Faz 3)
+
+Modül yalnızca Core'a bağlıdır; kendi `FishingDbContext`'i ve `fishing` şeması vardır (çekirdek
+tablolarına FK yok). Çekirdekle sözleşmeler üzerinden konuşur:
+
+- `IPersonalDataSection` → "verilerimi indir" çıktısına `modules.fishing` bölümü,
+- `DomainEventNotification<UserPurged>` → hesap kalıcı silinince noktalar, paylaşımlar ve av günlüğü silinir,
+- `DomainEventNotification<LocationSharingWithdrawn>` → konum rızası geri çekilince tüm paylaşımlar kalkar,
+- `IModuleSchemaInitializer` → şema, çekirdek başlatıcısından sonra hazırlanır.
+
+Özellikler:
+
+- **Deniz durumu:** 22 balıkçı limanı; liman noktası için tahmin, Beaufort sayısı, Türkçe rüzgâr adları
+  (Yıldız, Poyraz, Gündoğusu, Keşişleme, Kıble, Lodos, Günbatısı, Karayel), yerel güne göre özet ve
+  🟢/🟡/🔴 karar (`Go` / `Caution` / `NoGo`). Limanı kapsayan bölgede kritik uyarı varsa karar `NoGo`.
+- **Av noktası defteri:** Koordinatlar AES-GCM ile şifreli (`location_encrypted`), varsayılan gizli.
+  Paylaşım telefon numarasıyla, yalnızca konum paylaşımı rızası varken. Notlar yalnız sahibine görünür.
+  Ücretsiz sürümde 20 nokta (`Fishing:FreeSpotLimit`).
+- **Av günlüğü:** Tür, kg, adet, boy, nokta/liman. Kayıt engellenmez; asgari boy altı ve türe özel yasak
+  döneminde uyarı döner. Sezon istatistiği 1 Eylül – 31 Ağustos (tür, ay, avda geçen gün).
+- **Yasak takvimi:** Yıllık tekrarlayan dönemler (yıl sonunu aşanlar dahil), tür/bölge/av aracı filtresi.
+
+> Tür asgari boyları ve yasak dönemleri **taslaktır**; yürürlükteki Ticari Amaçlı Su Ürünleri
+> Avcılığı Tebliği ile doğrulanmalıdır (Faz 7'de yönetici panelinden güncellenecek).
+
 ### Veritabanı şeması
 
 `Database:ApplyMigrationsOnStartup=true` (Development) iken: migration varsa uygulanır, yoksa
@@ -129,7 +160,8 @@ Kurulum 3 adım: **telefon → SMS kodu → rızalar + niş ve il seçimi**.
 
 ```bash
 dotnet tool install --global dotnet-ef
-dotnet ef migrations add Faz1_Identity -p src/Infrastructure/SahaNet.Infrastructure -s src/Api/SahaNet.Api -o Persistence/Migrations
+dotnet ef migrations add Initial -p src/Infrastructure/SahaNet.Infrastructure -s src/Api/SahaNet.Api -c SahaNetDbContext -o Persistence/Migrations
+dotnet ef migrations add Initial -p src/Modules/SahaNet.Modules.Fishing -s src/Api/SahaNet.Api -c FishingDbContext -o Persistence/Migrations
 ```
 
 Migration eklendikten sonra `EnsureCreated` ile oluşturulmuş yerel veritabanını silin
@@ -149,7 +181,7 @@ Entegrasyon testleri Docker gerektirir (`postgis/postgis:16-3.4`, `redis:7-alpin
 - [x] Faz 0 — İskelet
 - [x] Faz 1 — Kimlik (OTP, JWT, profil, KVKK rıza)
 - [x] Faz 2 — Konum ve uyarı
-- [ ] Faz 3 — Balıkçı çekirdeği
+- [x] Faz 3 — Balıkçı çekirdeği
 - [ ] Faz 4 — Pazar
 - [ ] Faz 5 — Ödeme
 - [ ] Faz 6 — Mobil (MAUI)

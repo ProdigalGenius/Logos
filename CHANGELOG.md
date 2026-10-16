@@ -4,6 +4,15 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esas alınır
 
 ## [Unreleased]
 
+### Faz 3 — Balıkçı çekirdeği
+- Modül kendi `FishingDbContext`'i ve `fishing` şemasıyla; çekirdeğe `IPersonalDataSection` ve `IModuleSchemaInitializer` sözleşmeleri eklendi.
+- Liman bazlı deniz durumu: Beaufort, Türkçe rüzgâr adları, yerel gün özeti, Go/Caution/NoGo kararı, aktif uyarılar.
+- Av noktası defteri: şifreli koordinat, varsayılan gizli, telefonla paylaşım (konum rızası şart), ücretsiz sürüm sınırı.
+- `LocationSharingWithdrawn` event'i: rıza geri çekilince paylaşımlar otomatik kaldırılır.
+- Av günlüğü: asgari boy ve tür yasağı uyarıları, sezon istatistiği.
+- Tür kataloğu (24 tür) ve av yasakları takvimi (taslak seed), 22 liman.
+- Hesap kalıcı silinince modül verisi silinir; dışa aktarıma `modules.fishing` bölümü eklendi.
+
 ### Faz 2 — Konum ve uyarı
 - PostGIS: `Region` (geography nokta + yarıçap, GiST indeks), 13 kıyı deniz alanı seed'i, `ST_DWithin` ile yakın bölge sorgusu.
 - Bölge aboneliği (konu bayrakları, en fazla 10 bölge) ve FCM cihaz kaydı (token el değiştirirse yeni sahibe geçer).

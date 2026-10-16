@@ -23,6 +23,8 @@ internal sealed class IdentityHarness
 
     public FakeCurrentUser CurrentUser { get; } = new();
 
+    public FakePublisher Publisher { get; } = new();
+
     public InMemoryUsers Users { get; } = new();
 
     public InMemoryOtpChallenges Challenges { get; } = new();

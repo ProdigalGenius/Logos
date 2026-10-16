@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using SahaNet.Application.Modules;
 using SahaNet.Infrastructure.Options;
 
 namespace SahaNet.Infrastructure.Persistence;
@@ -26,6 +27,12 @@ internal sealed class DatabaseInitializer(IServiceScopeFactory scopeFactory, IOp
         else
         {
             await db.Database.EnsureCreatedAsync(cancellationToken);
+        }
+
+        // Modüller kendi şemalarını çekirdek şemadan sonra hazırlar (Users tablosuna bağımlı olabilirler).
+        foreach (var module in scope.ServiceProvider.GetServices<IModuleSchemaInitializer>())
+        {
+            await module.InitializeAsync(cancellationToken);
         }
     }
 

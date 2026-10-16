@@ -15,3 +15,6 @@ public enum ConsentType
     /// <summary>Ticari elektronik ileti izni.</summary>
     Marketing = 3,
 }
+
+/// <summary>Kullanıcı konum paylaşımı rızasını geri çekti; modüller mevcut paylaşımları kaldırmalı.</summary>
+public sealed record LocationSharingWithdrawn(Guid UserId) : SahaNet.Domain.Events.DomainEvent;
