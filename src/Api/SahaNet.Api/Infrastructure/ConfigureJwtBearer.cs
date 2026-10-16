@@ -18,7 +18,7 @@ internal sealed class ConfigureJwtBearer(IOptions<JwtOptions> jwt) : IConfigureN
         {
             ValidIssuer = settings.Issuer,
             ValidAudience = settings.Audience,
-            IssuerSigningKey = JwtTokenService.CreateSigningKey(settings.SigningKey),
+            IssuerSigningKey = JwtSigningKey.Create(settings.SigningKey),
             ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
             ClockSkew = TimeSpan.FromSeconds(30),
             NameClaimType = "sub",

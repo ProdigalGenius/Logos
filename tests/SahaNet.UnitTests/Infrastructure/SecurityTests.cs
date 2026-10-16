@@ -86,7 +86,7 @@ public class SecurityTests
         {
             ValidIssuer = "sahanet",
             ValidAudience = "mobile",
-            IssuerSigningKey = JwtTokenService.CreateSigningKey(settings.SigningKey),
+            IssuerSigningKey = JwtSigningKey.Create(settings.SigningKey),
         });
 
         validation.IsValid.Should().BeTrue();

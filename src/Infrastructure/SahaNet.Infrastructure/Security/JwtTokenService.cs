@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -44,13 +43,11 @@ internal sealed class JwtTokenService(IOptions<JwtOptions> options, IDateTimePro
             IssuedAt = now.UtcDateTime,
             NotBefore = now.UtcDateTime,
             Expires = expires.UtcDateTime,
-            SigningCredentials = new SigningCredentials(CreateSigningKey(settings.SigningKey), SecurityAlgorithms.HmacSha256),
+            SigningCredentials = new SigningCredentials(JwtSigningKey.Create(settings.SigningKey), SecurityAlgorithms.HmacSha256),
         };
 
         return new AccessToken(_handler.CreateToken(descriptor), expires);
     }
 
     public string GenerateRefreshToken() => Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(48));
-
-    public static SymmetricSecurityKey CreateSigningKey(string signingKey) => new(Encoding.UTF8.GetBytes(signingKey));
 }
