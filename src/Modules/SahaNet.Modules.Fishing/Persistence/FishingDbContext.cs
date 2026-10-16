@@ -87,7 +87,12 @@ internal sealed class FishingDbContext(DbContextOptions<FishingDbContext> option
             {
                 share.ToTable("spot_shares");
                 share.WithOwner().HasForeignKey(x => x.SpotId);
-                share.HasKey(x => new { x.SpotId, x.UserId });
+
+                // Üretilen anahtar: sahip yüklüyken eklenen paylaşım EF tarafından "yeni" olarak algılanır.
+                // (Doğal anahtar dolu gelse EF onu mevcut kayıt sanıp UPDATE dener.)
+                share.Property<long>("Id").UseIdentityAlwaysColumn();
+                share.HasKey("Id");
+                share.HasIndex(x => new { x.SpotId, x.UserId }).IsUnique();
                 share.HasIndex(x => x.UserId);
             });
         });
