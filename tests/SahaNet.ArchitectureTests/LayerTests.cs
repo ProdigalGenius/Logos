@@ -16,10 +16,12 @@ public class LayerTests
     private static readonly Assembly Infrastructure = typeof(SahaNet.Infrastructure.DependencyInjection).Assembly;
 
     /// <summary>Yeni modül eklendiğinde bu listeye eklenmelidir.</summary>
-    public static readonly TheoryData<string> ModuleAssemblies = new()
-    {
+    private static readonly string[] ModuleAssemblyNames =
+    [
         typeof(SahaNet.Modules.Fishing.FishingModule).Assembly.GetName().Name!,
-    };
+    ];
+
+    public static TheoryData<string> ModuleAssemblies => new(ModuleAssemblyNames);
 
     [Fact]
     public void Domain_HasNoDependencies_OnOtherLayersOrFrameworks()
@@ -56,8 +58,7 @@ public class LayerTests
     public void Modules_DependOnlyOnCore(string assemblyName)
     {
         var assembly = Assembly.Load(assemblyName);
-        var otherModules = ModuleAssemblies
-            .Select(row => (string)row[0])
+        var otherModules = ModuleAssemblyNames
             .Where(name => name != assemblyName)
             .ToArray();
 
