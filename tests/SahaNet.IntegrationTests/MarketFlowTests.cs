@@ -36,7 +36,7 @@ public class MarketFlowTests(SahaNetApiFactory factory)
         var categories = await factory.CreateClient().GetFromJsonAsync<List<CategoryResponse>>("/api/market/categories?niche=fishing");
 
         categories!.Select(c => c.Key).Should().BeEquivalentTo("fresh-fish", "fishing-equipment");
-        categories.Single(c => c.Key == "fresh-fish").Attributes.Should().Contain(a => a.Key == "pickupAt" && a.Required);
+        categories!.Single(c => c.Key == "fresh-fish").Attributes.Should().Contain(a => a.Key == "pickupAt" && a.Required);
     }
 
     [Fact]
