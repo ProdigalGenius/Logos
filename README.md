@@ -11,7 +11,8 @@ src/
   Core/SahaNet.Domain             Entity, AggregateRoot, ValueObject, Result, domain event'leri (bağımlılıksız)
   Core/SahaNet.Application        Use-case'ler, MediatR + FluentValidation pipeline, modül sözleşmesi
   Infrastructure/SahaNet.Infrastructure  EF Core 9 + PostgreSQL/PostGIS, Redis, health check'ler
-  Modules/SahaNet.Modules.Fishing Balıkçı modülü (yalnızca Core'a bağlı)
+  Modules/SahaNet.Modules.Fishing Balıkçı modülü — BalıkçıNet (yalnızca Core'a bağlı)
+  Modules/SahaNet.Modules.Scrap   Hurdacı modülü — HurdaNet (Faz 8, yalnızca Core'a bağlı)
   Api/SahaNet.Api                 Minimal API, Serilog, OpenTelemetry, Swagger, health uçları
 tests/
   SahaNet.UnitTests               xUnit + FluentAssertions
@@ -98,6 +99,9 @@ docker compose --profile api up --build
 | `PUT /api/admin/users/{id}/role` · `GET /api/admin/audit` | Rol atama, denetim kaydı (yönetici) |
 | `POST/PUT/DELETE /api/fishing/admin/bans` · `PUT /api/fishing/admin/species/{code}` | Av yasakları ve asgari boylar (yönetici) |
 | `/admin` | Yönetici paneli (tek sayfa, OTP ile giriş) |
+| `GET /api/scrap/materials` · `GET/POST /api/scrap/prices` | Hurda malzemeleri ve günlük fiyatlar |
+| `POST /api/scrap/pickups` · `GET .../open?province=` · `GET .../mine` | Toplama talepleri |
+| `POST /api/scrap/pickups/{id}/claim\|release\|complete\|cancel` | Talep akışı |
 | `/hangfire` | Arka plan işleri paneli (Development, yalnızca localhost) |
 | `/swagger` | OpenAPI arayüzü (Development) |
 
@@ -272,6 +276,31 @@ dotnet build src/Mobile/SahaNet.Mobile -f net9.0-android -p:Niche=fishing
   kullanıcılar, itirazlar, av yasakları, denetim. Güvenlik: tüm içerik `textContent` ile basılır, katı CSP
   (satır içi betik yok), belirteç `sessionStorage`'da, telefonlar maskeli gösterilir.
 
+### İkinci niş: HurdaNet (Faz 8)
+
+Mimarinin genişletilebilirliğinin kanıtı: **Core (Domain/Application/Infrastructure) ve balıkçı modülünde hiçbir
+satır değişmedi.** Eklenen tek şey `SahaNet.Modules.Scrap` projesi, bileşim kökünde üç satır
+(`AddApplication(..., typeof(ScrapModule).Assembly)`, `AddScrapModule()`, `MapScrapModule()`), mobilde
+`Niches/scrap` profili ve testler. Modül çekirdeğe yalnızca sözleşmelerle bağlanır:
+
+| Çekirdek sözleşmesi | HurdaNet'te kullanımı |
+|---|---|
+| `IModuleDescriptor` | Kurulumda "scrap" nişi seçilebilir hale gelir |
+| `IListingCategoryProvider` | `scrap-lot` (malzeme, il, ilçe) ve `scrap-equipment` — çekirdek ilan/teklif/ihale/ödeme aynen çalışır |
+| `IModuleSchemaInitializer` | `scrap` şeması |
+| `IPersonalDataSection` | KVKK dışa aktarımında `modules.scrap` |
+| `UserPurged` olayı | Hesap silinince talepler/fiyatlar silinir, üstlenilen işler serbest kalır |
+| `IAdminMetricsSection` | Gösterge panelinde açık/tamamlanan talep, toplanan kg |
+| `IUserNotifier`, `IPersonalDataProtector` | Talep üstlenilince push; açık adres şifreli kolonda |
+
+Yeni akış — **toplama talebi:** "Evimde 50 kg hurda var" → ildeki hurdacılar il/ilçe ve malzemeyi görür
+(adres gizli) → ilk üstlenen hurdacı açık adresi görür (satır sürümüyle eşzamanlı üstlenme korumalı) →
+tamamlar. Hurdacı vazgeçerse talep tekrar açılır.
+
+Mobil: aynı kod tabanından `-p:Niche=scrap` ile ayrı uygulama (HurdaNet, `app.sahanet.hurdanet`, turuncu tema);
+CI her iki APK'yı da derler. Yeni niş eklemek için şablon: `src/Modules/SahaNet.Modules.<Ad>` +
+bileşim kökünde kayıt + `Niches/<ad>/niche.props|json` + `LayerTests.ModuleAssemblyNames`.
+
 ### Veritabanı şeması
 
 `Database:ApplyMigrationsOnStartup=true` (Development) iken: migration varsa uygulanır, yoksa
@@ -281,6 +310,7 @@ dotnet build src/Mobile/SahaNet.Mobile -f net9.0-android -p:Niche=fishing
 dotnet tool install --global dotnet-ef
 dotnet ef migrations add Initial -p src/Infrastructure/SahaNet.Infrastructure -s src/Api/SahaNet.Api -c SahaNetDbContext -o Persistence/Migrations
 dotnet ef migrations add Initial -p src/Modules/SahaNet.Modules.Fishing -s src/Api/SahaNet.Api -c FishingDbContext -o Persistence/Migrations
+dotnet ef migrations add Initial -p src/Modules/SahaNet.Modules.Scrap -s src/Api/SahaNet.Api -c ScrapDbContext -o Persistence/Migrations
 ```
 
 Migration eklendikten sonra `EnsureCreated` ile oluşturulmuş yerel veritabanını silin
@@ -305,4 +335,4 @@ Entegrasyon testleri Docker gerektirir (`postgis/postgis:16-3.4`, `redis:7-alpin
 - [x] Faz 5 — Ödeme (sandbox sağlayıcı)
 - [x] Faz 6 — Mobil (MAUI, Android derlemesi CI'da)
 - [x] Faz 7 — Yönetim
-- [ ] Faz 8 — İkinci niş
+- [x] Faz 8 — İkinci niş (HurdaNet)

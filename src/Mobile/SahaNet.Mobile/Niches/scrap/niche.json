@@ -1,0 +1,13 @@
+{
+  "key": "scrap",
+  "appName": "HurdaNet",
+  "primaryColor": "#E65100",
+  "defaultRegionCode": "34",
+  "defaultPortCode": null,
+  "tiles": [
+    { "key": "pickups", "title": "Toplama talepleri", "icon": "🚚", "route": "pickups" },
+    { "key": "prices", "title": "Hurda fiyatları", "icon": "💰", "route": "prices" },
+    { "key": "market", "title": "Pazar", "icon": "🛒", "route": "market" },
+    { "key": "alerts", "title": "Duyurular", "icon": "📣", "route": "alerts" }
+  ]
+}

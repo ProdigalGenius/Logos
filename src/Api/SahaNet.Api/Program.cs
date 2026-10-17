@@ -19,6 +19,7 @@ using SahaNet.Infrastructure;
 using SahaNet.Infrastructure.Options;
 using SahaNet.Infrastructure.Security;
 using SahaNet.Modules.Fishing;
+using SahaNet.Modules.Scrap;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,9 +31,10 @@ builder.Host.UseSerilog((context, services, logger) => logger
     .Enrich.With<PhoneMaskingEnricher>());
 
 builder.Services
-    .AddApplication(typeof(FishingModule).Assembly)
+    .AddApplication(typeof(FishingModule).Assembly, typeof(ScrapModule).Assembly)
     .AddInfrastructure(builder.Configuration)
-    .AddFishingModule(builder.Configuration);
+    .AddFishingModule(builder.Configuration)
+    .AddScrapModule();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<HttpCurrentUser>();
@@ -177,6 +179,7 @@ app.MapPaymentEndpoints(paymentSandbox);
 app.MapAdminEndpoints();
 app.MapHub<ChatHub>(ChatHub.Path);
 app.MapFishingModule();
+app.MapScrapModule();
 
 await app.RunAsync();
 

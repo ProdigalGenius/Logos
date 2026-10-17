@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <ApplicationTitle>HurdaNet</ApplicationTitle>
+    <ApplicationId>app.sahanet.hurdanet</ApplicationId>
+    <NicheColor>#E65100</NicheColor>
+  </PropertyGroup>
+</Project>

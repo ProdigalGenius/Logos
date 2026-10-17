@@ -4,6 +4,12 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esas alınır
 
 ## [Unreleased]
 
+### Faz 8 — İkinci niş (HurdaNet)
+- `SahaNet.Modules.Scrap`: malzeme kataloğu, günlük hurda fiyatları (medyan), adres gizliliği korumalı toplama talebi akışı.
+- Çekirdek pazara `scrap-lot` ve `scrap-equipment` kategorileri; KVKK dışa aktarım/silme, yönetim metrikleri, şema başlatıcı.
+- Core ve balıkçı modülünde değişiklik yok; yalnızca bileşim kökünde kayıt.
+- Mobil `Niches/scrap` profili; CI'da HurdaNet Android derlemesi; mimari testler iki modülün birbirinden bağımsızlığını doğrular.
+
 ### Faz 7 — Yönetim
 - Rol yönetimi (Moderator/Admin), `Moderator` politikası, askıya alma (giriş/yenileme/ilan engeli, ilanların kaldırılması).
 - Şikâyet sistemi ve moderasyon kuyruğu; kararlar: reddet, içeriği kaldır (ilan/mesaj), kullanıcıyı askıya al.

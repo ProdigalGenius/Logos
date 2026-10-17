@@ -58,6 +58,10 @@ jobs:
       - name: Build BalıkçıNet (Android, Debug)
         run: dotnet build src/Mobile/SahaNet.Mobile/SahaNet.Mobile.csproj -f net9.0-android -c Debug -p:Niche=fishing
 
+      # Faz 8: aynı kod tabanından ikinci niş uygulaması (yalnızca niş profili farklı).
+      - name: Build HurdaNet (Android, Debug)
+        run: dotnet build src/Mobile/SahaNet.Mobile/SahaNet.Mobile.csproj -f net9.0-android -c Debug -p:Niche=scrap -o artifacts/scrap
+
   docker:
     runs-on: ubuntu-latest
     needs: build-test

@@ -19,6 +19,7 @@ public class LayerTests
     private static readonly string[] ModuleAssemblyNames =
     [
         typeof(SahaNet.Modules.Fishing.FishingModule).Assembly.GetName().Name!,
+        typeof(SahaNet.Modules.Scrap.ScrapModule).Assembly.GetName().Name!,
     ];
 
     public static TheoryData<string> ModuleAssemblies => new(ModuleAssemblyNames);

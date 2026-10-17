@@ -5,6 +5,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Infrastructure\SahaNet.Infrastructure\SahaNet.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\SahaNet.Modules.Fishing\SahaNet.Modules.Fishing.csproj" />
+    <ProjectReference Include="..\..\Modules\SahaNet.Modules.Scrap\SahaNet.Modules.Scrap.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" />

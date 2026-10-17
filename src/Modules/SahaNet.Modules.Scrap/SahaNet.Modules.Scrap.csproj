@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Faz 8: İkinci niş (HurdaNet). Çekirdeğe ve diğer modüllere dokunmadan, yalnızca bu proje eklenerek kuruldu.
+    Yalnızca Core'a (Domain + Application) bağlıdır; kalıcılığını "scrap" şemasında kendisi yönetir.
+  -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\SahaNet.Application\SahaNet.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="SahaNet.UnitTests" />
+  </ItemGroup>
+</Project>
