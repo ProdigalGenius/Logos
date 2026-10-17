@@ -102,6 +102,9 @@ internal sealed class InMemoryUsers : IUserRepository
     public Task<User?> GetByPhoneHashAsync(string phoneHash, CancellationToken cancellationToken) =>
         Task.FromResult(Items.FirstOrDefault(u => u.PhoneHash == phoneHash));
 
+    public Task<IReadOnlyList<User>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<User>>(Items.Where(u => ids.Contains(u.Id)).ToList());
+
     public Task<IReadOnlyList<User>> GetPendingDeletionRequestedBeforeAsync(DateTimeOffset threshold, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<User>>(Items.Where(u => u.Status == UserStatus.PendingDeletion && u.DeletionRequestedAt <= threshold).ToList());
 

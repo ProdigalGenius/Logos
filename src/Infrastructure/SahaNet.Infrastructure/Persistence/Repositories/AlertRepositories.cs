@@ -60,6 +60,9 @@ internal sealed class DeviceRepository(SahaNetDbContext db) : IDeviceRepository
     public async Task<IReadOnlyList<DeviceRegistration>> GetByUserAsync(Guid userId, CancellationToken cancellationToken) =>
         await db.Devices.Where(d => d.UserId == userId).ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<DeviceRegistration>> GetByUsersAsync(IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken) =>
+        userIds.Count == 0 ? [] : await db.Devices.Where(d => userIds.Contains(d.UserId)).ToListAsync(cancellationToken);
+
     public void Add(DeviceRegistration device) => db.Devices.Add(device);
 
     public void Remove(DeviceRegistration device) => db.Devices.Remove(device);

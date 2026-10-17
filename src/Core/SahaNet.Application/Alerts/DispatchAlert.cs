@@ -71,16 +71,19 @@ internal sealed partial class DispatchAlertCommandHandler(
 
         int recipients = 0, pushSent = 0, smsSent = 0, skipped = 0;
 
-        foreach (var subscription in subscribers)
-        {
-            if (delivered.Contains(subscription.UserId) || (!isCritical && !subscription.Wants(AlertTopics.Weather)))
-            {
-                skipped++;
-                continue;
-            }
+        // Kullanıcılar ve cihazlar abone başına değil, toplu okunur (büyük bölgelerde N+1 sorgu önlenir).
+        var targets = subscribers
+            .Where(s => !delivered.Contains(s.UserId) && (isCritical || s.Wants(AlertTopics.Weather)))
+            .Select(s => s.UserId)
+            .Distinct()
+            .ToList();
+        skipped += subscribers.Count - targets.Count;
+        var usersById = (await users.GetByIdsAsync(targets, cancellationToken)).ToDictionary(u => u.Id);
+        var devicesByUser = (await devices.GetByUsersAsync(targets, cancellationToken)).ToLookup(d => d.UserId);
 
-            var user = await users.GetByIdAsync(subscription.UserId, cancellationToken);
-            if (user is null || user.Status != UserStatus.Active)
+        foreach (var userId in targets)
+        {
+            if (!usersById.TryGetValue(userId, out var user) || user.Status != UserStatus.Active)
             {
                 skipped++;
                 continue;
@@ -90,7 +93,7 @@ internal sealed partial class DispatchAlertCommandHandler(
             var now = clock.UtcNow;
             var reachedByPush = false;
 
-            foreach (var device in await devices.GetByUserAsync(user.Id, cancellationToken))
+            foreach (var device in devicesByUser[user.Id])
             {
                 var result = await push.SendAsync(device, message, cancellationToken);
                 if (result == PushResult.Sent)

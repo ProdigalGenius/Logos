@@ -3,6 +3,7 @@ using Hangfire;
 using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -35,6 +36,35 @@ builder.Services
     .AddInfrastructure(builder.Configuration)
     .AddFishingModule(builder.Configuration)
     .AddScrapModule();
+
+// Yalnızca geliştirme: SMS sağlayıcısı olmadan telefonda deneme için sabit OTP (üretimde asla etkin olmaz).
+if (builder.Environment.IsDevelopment() && builder.Configuration["Development:FixedOtpCode"] is { Length: > 0 } fixedOtp)
+{
+    builder.Services.AddSingleton<IOtpCodeGenerator>(new FixedOtpCodeGenerator(fixedOtp));
+}
+
+// Ters proxy (nginx/ingress) arkasında gerçek istemci IP'si ve şema: rate limiting ve HTTPS yönlendirmesi buna dayanır.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+    foreach (var proxy in builder.Configuration.GetSection("Security:KnownProxies").Get<string[]>() ?? [])
+    {
+        options.KnownProxies.Add(System.Net.IPAddress.Parse(proxy));
+    }
+});
+
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);
+    options.IncludeSubDomains = true;
+});
+
+// CORS: mobil uygulama CORS'a tabi değildir; yalnızca yapılandırılmış web kökenlerine izin verilir (varsayılan: hiçbiri).
+var corsOrigins = builder.Configuration.GetSection("Security:CorsOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+    policy.WithOrigins(corsOrigins).AllowAnyHeader().WithMethods("GET", "POST", "PUT", "PATCH", "DELETE").AllowCredentials()));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<HttpCurrentUser>();
@@ -120,7 +150,23 @@ if (!paymentSandbox)
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
+
+if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
+// Tüm yanıtlar için temel güvenlik başlıkları.
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.XContentTypeOptions = "nosniff";
+    context.Response.Headers.XFrameOptions = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "no-referrer";
+    await next();
+});
 app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
@@ -143,14 +189,13 @@ app.Use(async (context, next) =>
     {
         context.Response.Headers.ContentSecurityPolicy =
             "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
-        context.Response.Headers.XContentTypeOptions = "nosniff";
-        context.Response.Headers["Referrer-Policy"] = "no-referrer";
     }
 
     await next();
 });
 app.UseDefaultFiles();
 app.UseStaticFiles();
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();

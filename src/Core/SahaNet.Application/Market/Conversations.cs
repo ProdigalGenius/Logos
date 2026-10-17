@@ -121,11 +121,8 @@ internal sealed class GetMyConversationsQueryHandler(ICurrentUser currentUser, I
         }
 
         var summaries = await conversations.GetForUserAsync(userId, cancellationToken);
-        var names = new Dictionary<Guid, string?>();
-        foreach (var participantId in summaries.SelectMany(s => s.Conversation.Participants).Select(p => p.UserId).Distinct())
-        {
-            names[participantId] = (await users.GetByIdAsync(participantId, cancellationToken))?.DisplayName;
-        }
+        var participantIds = summaries.SelectMany(s => s.Conversation.Participants).Select(p => p.UserId).Distinct().ToList();
+        var names = (await users.GetByIdsAsync(participantIds, cancellationToken)).ToDictionary(u => u.Id, u => u.DisplayName);
 
         return Result.Success<IReadOnlyList<ConversationResponse>>(summaries
             .Select(s => new ConversationResponse(

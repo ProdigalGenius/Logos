@@ -13,6 +13,9 @@ internal sealed class UserRepository(SahaNetDbContext db) : IUserRepository
     public Task<User?> GetByPhoneHashAsync(string phoneHash, CancellationToken cancellationToken) =>
         db.Users.FirstOrDefaultAsync(u => u.PhoneHash == phoneHash, cancellationToken);
 
+    public async Task<IReadOnlyList<User>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken) =>
+        ids.Count == 0 ? [] : await db.Users.Where(u => ids.Contains(u.Id)).ToListAsync(cancellationToken);
+
     public async Task<IReadOnlyList<User>> GetPendingDeletionRequestedBeforeAsync(DateTimeOffset threshold, CancellationToken cancellationToken) =>
         await db.Users
             .Where(u => u.Status == UserStatus.PendingDeletion && u.DeletionRequestedAt <= threshold)

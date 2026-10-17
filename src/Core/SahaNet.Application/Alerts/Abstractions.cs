@@ -36,6 +36,9 @@ public interface IDeviceRepository
 
     Task<IReadOnlyList<DeviceRegistration>> GetByUserAsync(Guid userId, CancellationToken cancellationToken);
 
+    /// <summary>Birden çok kullanıcının cihazları tek sorguda.</summary>
+    Task<IReadOnlyList<DeviceRegistration>> GetByUsersAsync(IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken);
+
     void Add(DeviceRegistration device);
 
     void Remove(DeviceRegistration device);

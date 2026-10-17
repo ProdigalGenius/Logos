@@ -30,12 +30,23 @@ jobs:
       - name: Integration tests (Testcontainers)
         run: dotnet test tests/SahaNet.IntegrationTests --no-build -c Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
 
+      # Kapsam eşikleri: toplam satır kapsamı ≥ %70, Application ≥ %85.
+      - name: Coverage report & thresholds
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.4.4
+          reportgenerator -reports:"TestResults/**/coverage.cobertura.xml" -targetdir:coverage -reporttypes:"JsonSummary;MarkdownSummaryGithub" \
+            -assemblyfilters:"+SahaNet.*;-SahaNet.*Tests*;-SahaNet.Mobile*"
+          cat coverage/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+          python3 .github/scripts/coverage_gate.py coverage/Summary.json
+
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage
-          path: TestResults/**/coverage.cobertura.xml
+          path: |
+            TestResults/**/coverage.cobertura.xml
+            coverage/
 
   mobile-android:
     # MAUI Android derlemesi (iOS derlemesi macOS runner gerektirir).
@@ -55,12 +66,65 @@ jobs:
       - name: Install MAUI Android workload
         run: dotnet workload install maui-android
 
-      - name: Build BalıkçıNet (Android, Debug)
-        run: dotnet build src/Mobile/SahaNet.Mobile/SahaNet.Mobile.csproj -f net9.0-android -c Debug -p:Niche=fishing
+      # Telefona doğrudan kurulabilir APK (Debug imzalı, derlemeler APK'ya gömülü).
+      - name: Build BalıkçıNet APK
+        run: >
+          dotnet publish src/Mobile/SahaNet.Mobile/SahaNet.Mobile.csproj -f net9.0-android -c Debug
+          -p:Niche=fishing -p:AndroidPackageFormat=apk -p:EmbedAssembliesIntoApk=true -o artifacts/fishing
 
       # Faz 8: aynı kod tabanından ikinci niş uygulaması (yalnızca niş profili farklı).
-      - name: Build HurdaNet (Android, Debug)
-        run: dotnet build src/Mobile/SahaNet.Mobile/SahaNet.Mobile.csproj -f net9.0-android -c Debug -p:Niche=scrap -o artifacts/scrap
+      - name: Build HurdaNet APK
+        run: >
+          dotnet publish src/Mobile/SahaNet.Mobile/SahaNet.Mobile.csproj -f net9.0-android -c Debug
+          -p:Niche=scrap -p:AndroidPackageFormat=apk -p:EmbedAssembliesIntoApk=true -o artifacts/scrap
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: artifacts/**/*-Signed.apk
+
+  # Commit mesajında [migrations] varsa EF Core başlangıç migration'larını üretip dala işler.
+  migrations:
+    if: contains(github.event.head_commit.message, '[migrations]')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: sahanet
+          POSTGRES_USER: sahanet
+          POSTGRES_PASSWORD: sahanet_dev
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U sahanet" --health-interval 5s --health-retries 10
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      Database__ConnectionString: Host=localhost;Port=5432;Database=sahanet;Username=sahanet;Password=sahanet_dev
+      Database__ApplyMigrationsOnStartup: "false"
+      BackgroundJobs__Enabled: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet tool install --global dotnet-ef --version 9.0.0
+      - name: Generate migrations
+        run: |
+          API=src/Api/SahaNet.Api
+          dotnet ef migrations add Initial --startup-project $API --project src/Infrastructure/SahaNet.Infrastructure --context SahaNetDbContext -o Persistence/Migrations
+          dotnet ef migrations add Initial --startup-project $API --project src/Modules/SahaNet.Modules.Fishing --context FishingDbContext -o Persistence/Migrations
+          dotnet ef migrations add Initial --startup-project $API --project src/Modules/SahaNet.Modules.Scrap --context ScrapDbContext -o Persistence/Migrations
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A src
+          git commit -m "EF Core başlangıç migration'ları (CI ile üretildi)"
+          git push
 
   docker:
     runs-on: ubuntu-latest

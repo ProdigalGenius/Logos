@@ -9,6 +9,9 @@ public interface IUserRepository
 
     Task<User?> GetByPhoneHashAsync(string phoneHash, CancellationToken cancellationToken);
 
+    /// <summary>Toplu okuma (N+1 sorgu yerine tek sorgu).</summary>
+    Task<IReadOnlyList<User>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<User>> GetPendingDeletionRequestedBeforeAsync(DateTimeOffset threshold, CancellationToken cancellationToken);
 
     /// <summary>Yönetici araması: telefon özetiyle tam eşleşme veya ad içinde geçen metin.</summary>

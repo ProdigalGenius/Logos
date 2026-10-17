@@ -53,6 +53,9 @@ internal sealed class InMemoryDevices : IDeviceRepository
     public Task<IReadOnlyList<DeviceRegistration>> GetByUserAsync(Guid userId, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<DeviceRegistration>>(Items.Where(d => d.UserId == userId).ToList());
 
+    public Task<IReadOnlyList<DeviceRegistration>> GetByUsersAsync(IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<DeviceRegistration>>(Items.Where(d => userIds.Contains(d.UserId)).ToList());
+
     public void Add(DeviceRegistration device) => Items.Add(device);
 
     public void Remove(DeviceRegistration device) => Items.Remove(device);
