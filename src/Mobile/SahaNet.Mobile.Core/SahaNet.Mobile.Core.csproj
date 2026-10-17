@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Mobil uygulamanın platformdan bağımsız çekirdeği: API istemcisi, çevrimdışı depo, senkronizasyon,
+    ViewModel'ler. Sunucu projelerine referans vermez (mimari testlerle zorlanır).
+  -->
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="SahaNet.UnitTests" />
+  </ItemGroup>
+</Project>

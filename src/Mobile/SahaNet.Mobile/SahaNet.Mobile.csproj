@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Niş (white-label) seçimi: dotnet build -p:Niche=fishing
+    Niches/<niş>/niche.props uygulama adı, paket kimliği ve rengi; niche.json ana ekran modüllerini belirler.
+  -->
+  <PropertyGroup>
+    <Niche Condition="'$(Niche)' == ''">fishing</Niche>
+  </PropertyGroup>
+  <Import Project="Niches/$(Niche)/niche.props" />
+
+  <PropertyGroup>
+    <!-- Directory.Build.props'taki tek hedefi temizle; MAUI çoklu hedeflidir. -->
+    <TargetFramework></TargetFramework>
+    <TargetFrameworks>net9.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">$(TargetFrameworks);net9.0-ios</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>SahaNet.Mobile</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <ApplicationDisplayVersion>0.9.0</ApplicationDisplayVersion>
+    <ApplicationVersion>9</ApplicationVersion>
+    <!-- Düşük donanımlı cihazlar: Android 7.0+ (API 24). -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <!-- Derlenmiş XAML bağlamaları (x:DataType): daha hızlı ve hatasız. -->
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <!-- Küçük APK ve düşük bellek: kırpma + R8. -->
+    <AndroidLinkTool>r8</AndroidLinkTool>
+    <AndroidPackageFormat>aab</AndroidPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="$(NicheColor)" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="$(NicheColor)" BaseSize="128,128" />
+    <EmbeddedResource Include="Niches\$(Niche)\niche.json" LogicalName="niche.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" />
+    <PackageReference Include="CommunityToolkit.Maui" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SahaNet.Mobile.Core\SahaNet.Mobile.Core.csproj" />
+  </ItemGroup>
+</Project>

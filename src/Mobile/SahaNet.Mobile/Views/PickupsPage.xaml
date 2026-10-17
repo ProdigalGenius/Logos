@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SahaNet.Mobile.Core.ViewModels;assembly=SahaNet.Mobile.Core"
+             xmlns:api="clr-namespace:SahaNet.Mobile.Core.Api;assembly=SahaNet.Mobile.Core"
+             xmlns:data="clr-namespace:SahaNet.Mobile.Core.Data;assembly=SahaNet.Mobile.Core"
+             x:Class="SahaNet.Mobile.Views.PickupsPage"
+             x:DataType="vm:PickupsViewModel"
+             Title="Toplama talepleri">
+    <RefreshView Command="{Binding LoadCommand}" IsRefreshing="{Binding IsBusy}">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="12">
+                <Label Text="🚚 Evimde hurda var" Style="{StaticResource Title}" />
+                <Entry Text="{Binding ProvinceCode}" Keyboard="Numeric" MaxLength="2" Placeholder="İl plaka kodu" />
+                <Entry Text="{Binding District}" Placeholder="İlçe" />
+                <Entry Text="{Binding Address}" Placeholder="Açık adres (yalnızca üstlenen hurdacı görür)" />
+                <Entry Text="{Binding EstimatedKg}" Keyboard="Numeric" Placeholder="Tahmini kilo" />
+                <CollectionView ItemsSource="{Binding Materials}" SelectionMode="None" HeightRequest="220">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="2" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MaterialChoice">
+                            <HorizontalStackLayout>
+                                <CheckBox IsChecked="{Binding IsSelected}" />
+                                <Label Text="{Binding Material.Name}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+                <Button Text="Talep oluştur" Command="{Binding CreateCommand}" />
+                <Label Text="{Binding StatusText}" />
+
+                <Label Text="Taleplerim" Style="{StaticResource Title}" FontSize="22" />
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Mine}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="api:PickupDto">
+                            <Border StrokeShape="RoundRectangle 12" Padding="12" Margin="0,4">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="{Binding MaterialsText}" FontAttributes="Bold" />
+                                    <Label Text="{Binding District}" />
+                                    <Label Text="{Binding Status, StringFormat='Durum: {0}'}" />
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Button Text="Tamamlandı" FontSize="16" IsVisible="{Binding IsMyJob}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PickupsViewModel}}, Path=CompleteCommand, x:DataType=vm:PickupsViewModel}" CommandParameter="{Binding .}" />
+                                        <Button Text="İptal" FontSize="16" BackgroundColor="{StaticResource Danger}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PickupsViewModel}}, Path=CancelCommand, x:DataType=vm:PickupsViewModel}" CommandParameter="{Binding .}" />
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Label Text="İlimdeki açık talepler (hurdacılar için)" Style="{StaticResource Title}" FontSize="22" />
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Open}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="api:PickupDto">
+                            <Border StrokeShape="RoundRectangle 12" Padding="12" Margin="0,4">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding MaterialsText}" FontAttributes="Bold" />
+                                        <Label Text="{Binding EstimatedKg, StringFormat='~{0:0} kg'}" />
+                                        <Label Text="{Binding District}" />
+                                    </VerticalStackLayout>
+                                    <Button Grid.Column="1" Text="Üstlen" FontSize="16" VerticalOptions="Center"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PickupsViewModel}}, Path=ClaimCommand, x:DataType=vm:PickupsViewModel}" CommandParameter="{Binding .}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

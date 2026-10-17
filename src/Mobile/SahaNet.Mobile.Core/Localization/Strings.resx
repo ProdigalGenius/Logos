@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Onboarding_PhoneTitle" xml:space="preserve"><value>Telefon numaranız</value></data>
+  <data name="Onboarding_CodeTitle" xml:space="preserve"><value>SMS ile gelen kod</value></data>
+  <data name="Onboarding_ProfileTitle" xml:space="preserve"><value>Son adım</value></data>
+  <data name="Onboarding_SendCode" xml:space="preserve"><value>Kod gönder</value></data>
+  <data name="Onboarding_Verify" xml:space="preserve"><value>Doğrula</value></data>
+  <data name="Onboarding_Finish" xml:space="preserve"><value>Başla</value></data>
+  <data name="Onboarding_ConsentsRequired" xml:space="preserve"><value>Devam etmek için zorunlu metinleri onaylayın.</value></data>
+  <data name="Onboarding_SelectRegion" xml:space="preserve"><value>Bölgenizi seçin.</value></data>
+  <data name="Sea_Go" xml:space="preserve"><value>Denize çıkılabilir</value></data>
+  <data name="Sea_Caution" xml:space="preserve"><value>Dikkatli olun</value></data>
+  <data name="Sea_NoGo" xml:space="preserve"><value>Denize çıkmayın</value></data>
+  <data name="Sea_Stale" xml:space="preserve"><value>Son güncelleme: {0:HH:mm} (çevrimdışı)</value></data>
+  <data name="Catch_Saved" xml:space="preserve"><value>Av kaydedildi.</value></data>
+  <data name="Catch_Queued" xml:space="preserve"><value>Kaydedildi. İnternet gelince gönderilecek.</value></data>
+  <data name="Catch_InvalidWeight" xml:space="preserve"><value>Geçerli bir kilo girin.</value></data>
+  <data name="Catch_SelectSpecies" xml:space="preserve"><value>Tür seçin.</value></data>
+  <data name="Sync_Pending" xml:space="preserve"><value>{0} kayıt gönderilmeyi bekliyor</value></data>
+  <data name="Error_Offline" xml:space="preserve"><value>İnternet bağlantısı yok.</value></data>
+</root>

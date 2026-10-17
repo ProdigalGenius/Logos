@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Teknoloji yabancısı kullanıcılar için: büyük dokunma alanları, yüksek kontrast, az metin. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <Color x:Key="Primary">#0D47A1</Color>
+    <Color x:Key="Danger">#C62828</Color>
+    <Color x:Key="Warning">#F9A825</Color>
+    <Color x:Key="Safe">#2E7D32</Color>
+
+    <Style TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="MinimumHeightRequest" Value="64" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="16,8" />
+    </Style>
+
+    <Style TargetType="Entry">
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="MinimumHeightRequest" Value="56" />
+    </Style>
+
+    <Style TargetType="Label">
+        <Setter Property="FontSize" Value="18" />
+    </Style>
+
+    <Style x:Key="Title" TargetType="Label">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style x:Key="Error" TargetType="Label">
+        <Setter Property="TextColor" Value="{StaticResource Danger}" />
+        <Setter Property="FontSize" Value="18" />
+    </Style>
+
+    <Style x:Key="MicButton" TargetType="Button">
+        <Setter Property="Text" Value="🎤" />
+        <Setter Property="FontSize" Value="26" />
+        <Setter Property="WidthRequest" Value="64" />
+        <Setter Property="BackgroundColor" Value="#E3F2FD" />
+        <Setter Property="SemanticProperties.Description" Value="Sesli giriş" />
+    </Style>
+</ResourceDictionary>

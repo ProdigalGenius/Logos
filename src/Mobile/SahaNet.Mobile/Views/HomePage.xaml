@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SahaNet.Mobile.Core.ViewModels;assembly=SahaNet.Mobile.Core"
+             xmlns:niche="clr-namespace:SahaNet.Mobile.Core.Niche;assembly=SahaNet.Mobile.Core"
+             x:Class="SahaNet.Mobile.Views.HomePage"
+             x:DataType="vm:HomeViewModel"
+             Title="{Binding AppName}">
+    <Grid RowDefinitions="Auto,*" Padding="16" RowSpacing="12">
+        <Label Text="{Binding SyncText}" TextColor="{StaticResource Warning}" />
+        <!-- İkon ağırlıklı, iki sütunlu büyük kutucuklar. -->
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Tiles}" SelectionMode="Single" SelectionChanged="OnTileSelected">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="12" VerticalItemSpacing="12" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="niche:NicheTile">
+                    <Border StrokeShape="RoundRectangle 16" BackgroundColor="#E3F2FD" HeightRequest="150" Padding="8"
+                            SemanticProperties.Description="{Binding Title}">
+                        <VerticalStackLayout VerticalOptions="Center" Spacing="8">
+                            <Label Text="{Binding Icon}" FontSize="52" HorizontalOptions="Center" />
+                            <Label Text="{Binding Title}" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SahaNet.Mobile.Core.ViewModels;assembly=SahaNet.Mobile.Core"
+             xmlns:api="clr-namespace:SahaNet.Mobile.Core.Api;assembly=SahaNet.Mobile.Core"
+             xmlns:data="clr-namespace:SahaNet.Mobile.Core.Data;assembly=SahaNet.Mobile.Core"
+             x:Class="SahaNet.Mobile.Views.SpotsPage"
+             x:DataType="vm:SpotsViewModel"
+             Title="Av noktalarım">
+    <Grid RowDefinitions="Auto,*" Padding="16" RowSpacing="12">
+        <VerticalStackLayout Spacing="8">
+            <Label Text="🔒 Noktalarınız gizlidir; yalnızca sizin seçtiğiniz kişiler görür." FontSize="14" />
+            <Entry Text="{Binding NewName}" Placeholder="📍 Yeni nokta adı" />
+            <Button Text="Bulunduğum yeri kaydet" Command="{Binding AddHereCommand}" />
+            <Label Text="{Binding StatusText}" />
+        </VerticalStackLayout>
+        <RefreshView Grid.Row="1" Command="{Binding LoadCommand}" IsRefreshing="{Binding IsBusy}">
+            <CollectionView ItemsSource="{Binding Spots}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="data:SpotItem">
+                        <Grid ColumnDefinitions="*,Auto" Padding="0,8">
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Spot.Name}" FontAttributes="Bold" FontSize="20" />
+                                <Label FontSize="14">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Spot.Latitude, StringFormat='{0:0.0000}'}" />
+                                            <Span Text=", " />
+                                            <Span Text="{Binding Spot.Longitude, StringFormat='{0:0.0000}'}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="1" Text="⏳" IsVisible="{Binding IsPending}" VerticalOptions="Center" FontSize="22" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

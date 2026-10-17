@@ -1,0 +1,18 @@
+{
+  "key": "fishing",
+  "appName": "BalıkçıNet",
+  "primaryColor": "#0D47A1",
+  "defaultRegionCode": "34",
+  "defaultPortCode": "sariyer",
+  "emergencyNumber": "158",
+  "tiles": [
+    { "key": "sea", "title": "Deniz durumu", "icon": "🌊", "route": "sea" },
+    { "key": "catches", "title": "Av günlüğü", "icon": "🐟", "route": "catches" },
+    { "key": "alerts", "title": "Uyarılar", "icon": "⚠️", "route": "alerts" },
+    { "key": "spots", "title": "Noktalarım", "icon": "📍", "route": "spots" },
+    { "key": "market", "title": "Pazar", "icon": "🛒", "route": "market" },
+    { "key": "messages", "title": "Mesajlar", "icon": "💬", "route": "messages" },
+    { "key": "emergency", "title": "Acil durum", "icon": "🆘", "route": "emergency" },
+    { "key": "settings", "title": "Ayarlar", "icon": "⚙️", "route": "settings" }
+  ]
+}

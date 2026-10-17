@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SahaNet.Mobile.Core.ViewModels;assembly=SahaNet.Mobile.Core"
+             xmlns:api="clr-namespace:SahaNet.Mobile.Core.Api;assembly=SahaNet.Mobile.Core"
+             xmlns:data="clr-namespace:SahaNet.Mobile.Core.Data;assembly=SahaNet.Mobile.Core"
+             x:Class="SahaNet.Mobile.Views.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Title="Ayarlar">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <Label Text="🌐 Sunucu adresi" Style="{StaticResource Title}" FontSize="22" />
+            <Entry Text="{Binding ServerUrl}" Keyboard="Url" Placeholder="192.168.1.20:5080" />
+            <Button Text="Kaydet" Command="{Binding SaveServerCommand}" />
+
+            <VerticalStackLayout Spacing="8" IsVisible="{Binding IsAdmin}">
+                <Label Text="👥 Kullanıcı ekle (yönetici)" Style="{StaticResource Title}" FontSize="22" />
+                <Entry Text="{Binding NewUserPhone}" Keyboard="Telephone" Placeholder="0 5XX XXX XX XX" />
+                <HorizontalStackLayout>
+                    <CheckBox IsChecked="{Binding NewUserIsModerator}" />
+                    <Label Text="Moderatör olsun" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <Button Text="Ekle" Command="{Binding AddUserCommand}" />
+            </VerticalStackLayout>
+
+            <Label Text="🛡️ Kişisel verilerim (KVKK)" Style="{StaticResource Title}" FontSize="22" />
+            <Button Text="Verilerimi indir" Command="{Binding ExportCommand}" />
+            <Button Text="Hesabımı sil" BackgroundColor="{StaticResource Danger}" Clicked="OnDeleteClicked" />
+
+            <Button Text="Çıkış yap" BackgroundColor="Gray" Command="{Binding SignOutCommand}" />
+            <Label Text="{Binding StatusText}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
