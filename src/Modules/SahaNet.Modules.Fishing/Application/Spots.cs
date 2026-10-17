@@ -72,7 +72,8 @@ public sealed record SaveSpotCommand(
     double Longitude,
     double? DepthM,
     string? Notes,
-    IReadOnlyList<string>? Species) : IRequest<Result<SpotResponse>>;
+    IReadOnlyList<string>? Species,
+    Guid? ClientId = null) : IRequest<Result<SpotResponse>>;
 
 internal sealed class SaveSpotCommandValidator : AbstractValidator<SaveSpotCommand>
 {
@@ -129,6 +130,17 @@ internal sealed class SaveSpotCommandHandler(
             existing.Update(request.Name, location.Value, request.DepthM, request.Notes, request.Species, now);
             spot = existing;
         }
+        else if (request.ClientId is { } clientId &&
+                 await db.Spots.FirstOrDefaultAsync(s => s.Id == clientId, cancellationToken) is { } replayed)
+        {
+            // Çevrimdışı tekrar gönderim: aynı istemci kimliği → aynı nokta.
+            if (replayed.OwnerId != userId)
+            {
+                return Result.Failure<SpotResponse>(FishingErrors.SpotNotFound);
+            }
+
+            spot = replayed;
+        }
         else
         {
             var count = await db.Spots.CountAsync(s => s.OwnerId == userId, cancellationToken);
@@ -137,7 +149,7 @@ internal sealed class SaveSpotCommandHandler(
                 return Result.Failure<SpotResponse>(FishingErrors.SpotLimitReached);
             }
 
-            spot = CatchSpot.Create(userId, request.Name, location.Value, request.DepthM, request.Notes, request.Species, now);
+            spot = CatchSpot.Create(userId, request.Name, location.Value, request.DepthM, request.Notes, request.Species, now, request.ClientId);
             db.Spots.Add(spot);
         }
 

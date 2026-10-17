@@ -29,6 +29,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SahaNet.IntegrationTests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SahaNet.ArchitectureTests", "tests\SahaNet.ArchitectureTests\SahaNet.ArchitectureTests.csproj", "{AEA0F6A1-D311-57D9-8E48-29EE2278BD36}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mobile", "Mobile", "{6EABDE9B-5E5C-530D-A1D0-7B48CBA38638}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SahaNet.Mobile.Core", "src\\Mobile\\SahaNet.Mobile.Core\\SahaNet.Mobile.Core.csproj", "{EC454100-E2D3-5766-ACFB-087B36D3A18A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,8 +71,13 @@ Global
 		{AEA0F6A1-D311-57D9-8E48-29EE2278BD36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEA0F6A1-D311-57D9-8E48-29EE2278BD36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEA0F6A1-D311-57D9-8E48-29EE2278BD36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC454100-E2D3-5766-ACFB-087B36D3A18A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC454100-E2D3-5766-ACFB-087B36D3A18A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC454100-E2D3-5766-ACFB-087B36D3A18A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC454100-E2D3-5766-ACFB-087B36D3A18A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{EC454100-E2D3-5766-ACFB-087B36D3A18A} = {6EABDE9B-5E5C-530D-A1D0-7B48CBA38638}
 		{363C5868-CBBA-512F-A30B-AF4AD7429BCD} = {DA3AC31E-E393-56F1-AEB6-F22CC1D4E376}
 		{9219960B-7A6A-50C5-B770-538DE9494C90} = {DA3AC31E-E393-56F1-AEB6-F22CC1D4E376}
 		{F77F16E7-C9F9-5696-9FF5-55AA85D49277} = {80BDC0BD-699A-5CEB-B17B-6202B43E8D2B}

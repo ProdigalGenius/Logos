@@ -52,7 +52,8 @@ public sealed record RecordCatchCommand(
     double? LengthCm,
     Guid? SpotId,
     Guid? PortId,
-    string? Notes) : IRequest<Result<RecordCatchResponse>>;
+    string? Notes,
+    Guid? ClientId = null) : IRequest<Result<RecordCatchResponse>>;
 
 internal sealed class RecordCatchCommandValidator : AbstractValidator<RecordCatchCommand>
 {
@@ -86,6 +87,15 @@ internal sealed class RecordCatchCommandHandler(
             return Result.Failure<RecordCatchResponse>(FishingErrors.SpeciesUnknown);
         }
 
+        // Çevrimdışı senkronizasyon: aynı istemci kimliğiyle tekrar gelen kayıt mevcut olanı döndürür.
+        if (request.ClientId is { } clientId &&
+            await db.Catches.AsNoTracking().FirstOrDefaultAsync(c => c.Id == clientId, cancellationToken) is { } existing)
+        {
+            return existing.UserId == userId
+                ? Result.Success(new RecordCatchResponse(existing.ToResponse(species.Name), []))
+                : Result.Failure<RecordCatchResponse>(FishingErrors.CatchNotFound);
+        }
+
         if (request.SpotId is { } spotId &&
             !await db.Spots.AnyAsync(s => s.Id == spotId && (s.OwnerId == userId || s.Shares.Any(x => x.UserId == userId)), cancellationToken))
         {
@@ -99,7 +109,7 @@ internal sealed class RecordCatchCommandHandler(
 
         var entry = CatchEntry.Record(
             userId, request.CaughtAt.ToUniversalTime(), species.Code, request.WeightKg, request.Count, request.LengthCm,
-            request.SpotId, request.PortId, request.Notes, clock.UtcNow);
+            request.SpotId, request.PortId, request.Notes, clock.UtcNow, request.ClientId);
         if (entry.IsFailure)
         {
             return Result.Failure<RecordCatchResponse>(entry.Error);

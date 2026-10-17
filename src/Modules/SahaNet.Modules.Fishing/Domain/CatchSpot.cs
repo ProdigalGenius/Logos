@@ -51,12 +51,14 @@ public sealed class CatchSpot : Entity<Guid>
 
     public IReadOnlyCollection<SpotShare> Shares => _shares.AsReadOnly();
 
-    public static CatchSpot Create(Guid ownerId, string name, GeoPoint location, double? depthM, string? notes, IEnumerable<string>? species, DateTimeOffset now)
+    public static CatchSpot Create(
+        Guid ownerId, string name, GeoPoint location, double? depthM, string? notes, IEnumerable<string>? species, DateTimeOffset now, Guid? clientId = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(location);
 
-        var spot = new CatchSpot(Guid.NewGuid(), ownerId, name.Trim(), location, now);
+        var id = clientId is { } c && c != Guid.Empty ? c : Guid.NewGuid();
+        var spot = new CatchSpot(id, ownerId, name.Trim(), location, now);
         spot.Update(name, location, depthM, notes, species, now);
         return spot;
     }

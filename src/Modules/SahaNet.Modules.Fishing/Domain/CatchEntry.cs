@@ -55,7 +55,8 @@ public sealed class CatchEntry : Entity<Guid>
         Guid? spotId,
         Guid? portId,
         string? notes,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        Guid? clientId = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(speciesCode);
         if (caughtAt > now.AddMinutes(5))
@@ -63,7 +64,8 @@ public sealed class CatchEntry : Entity<Guid>
             return Result.Failure<CatchEntry>(FishingErrors.CatchInFuture);
         }
 
-        return Result.Success(new CatchEntry(Guid.NewGuid(), userId, caughtAt, speciesCode, weightKg, now)
+        // Çevrimdışı istemci kimliği kendisi üretir; tekrar gönderimde aynı kayıt oluşur (idempotent).
+        return Result.Success(new CatchEntry(clientId is { } id && id != Guid.Empty ? id : Guid.NewGuid(), userId, caughtAt, speciesCode, weightKg, now)
         {
             Count = count,
             LengthCm = lengthCm,
