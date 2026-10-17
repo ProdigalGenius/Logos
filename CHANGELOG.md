@@ -4,6 +4,12 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esas alınır
 
 ## [Unreleased]
 
+### Faz 6 — Mobil
+- `SahaNet.Mobile.Core`: tipli API istemcisi, 401'de belirteç yenileyen `AuthHandler`, SQLite önbellek + outbox, `SyncService`, offline-first `FishingRepository`, ViewModel'ler (CommunityToolkit.Mvvm), niş profili, Türkçe/İngilizce kaynaklar.
+- `SahaNet.Mobile` (.NET MAUI): niş bazlı build profili (`-p:Niche`), kurulum/ana ekran/deniz durumu/av günlüğü ekranları, sesli giriş, güvenli belirteç deposu, bağlantı izleme, Android kritik bildirim kanalı.
+- Sunucu: av kaydı ve nokta oluşturmada istemci kimliği (`ClientId`) ile idempotency.
+- CI: MAUI Android derleme işi; mobil çekirdek için birim ve mimari testler.
+
 ### Faz 5 — Ödeme
 - `PaymentOrder` emanet durum makinesi: ödeme bekliyor → emanette → teslim → serbest bırakma; itiraz → yönetici kararı (aktarım/iade); ödenmeyen iptal.
 - Komisyon (oran + asgari ücret, kategori bazlı oran, sipariş anında sabitlenir; iadede alınmaz).

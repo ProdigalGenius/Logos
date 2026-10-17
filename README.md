@@ -17,6 +17,7 @@ tests/
   SahaNet.UnitTests               xUnit + FluentAssertions
   SahaNet.IntegrationTests        WebApplicationFactory + Testcontainers (gerçek PostGIS & Redis)
   SahaNet.ArchitectureTests       NetArchTest ile katman kuralları
+src/Mobile/                       MAUI uygulaması ve platformdan bağımsız mobil çekirdek
 ```
 
 **Kurallar** (mimari testlerle zorlanır):
@@ -216,6 +217,34 @@ AwaitingPayment ──öde──▶ Held ──satıcı: teslim ettim──▶ D
   (`IPaymentGateway`: checkout, doğrulama, alt üye işyerine aktarım onayı, iade) üye işyeri bilgileri ve
   sandbox erişimiyle eklenmelidir. **Uygulama Development/Testing dışında başlatılırsa açılışta durur.**
 
+### Mobil uygulama (Faz 6)
+
+```
+src/Mobile/SahaNet.Mobile.Core   net9.0 — API istemcisi, SQLite çevrimdışı depo, outbox senkronizasyonu,
+                                 ViewModel'ler, niş profili, i18n (ana çözümde, Linux'ta test edilir)
+src/Mobile/SahaNet.Mobile        .NET MAUI (Android; macOS'ta iOS) — SahaNet.Mobile.sln
+```
+
+```bash
+dotnet workload install maui-android
+dotnet build src/Mobile/SahaNet.Mobile -f net9.0-android -p:Niche=fishing
+```
+
+- **Niş (white-label) profili:** `Niches/<niş>/niche.props` (uygulama adı, paket kimliği, renk) ve
+  `niche.json` (ana ekran modülleri, varsayılan bölge/liman). Yeni niş = yeni klasör + `-p:Niche=...`.
+- **Offline-first:** Okumalar önce ağ, olmazsa SQLite'taki son veri ("son güncelleme 14:20 · çevrimdışı").
+  Yazmalar (av kaydı, nokta) önce outbox'a yazılır; bağlantı gelince sırayla gönderilir. İstemci
+  kimliği (`ClientId`) sunucuda idempotency sağlar: kopan bağlantıda tekrar gönderim çift kayıt üretmez.
+  Kalıcı reddedilen kayıt kuyruğu tıkamaz, kullanıcıya gösterilir. Ağ hatasında sıra korunur.
+- **Oturum:** Belirteçler Keystore/Keychain'de; 401'de tek seferlik yenileme (eşzamanlı istekler tek
+  yenilemeye indirgenir), yenileme reddedilirse oturum kapanır.
+- **UX:** 3 adımlı kurulum, büyük ikonlu kutucuklar, renk + ikon + kısa cümleyle deniz durumu kararı,
+  her form alanında 🎤 sesli giriş (Türkçe), "2,5 kg" gibi doğal sayı girişi. Türkçe varsayılan, İngilizce hazır.
+- **Bildirim:** Android'de `critical_alerts` kanalı (Rahatsız Etmeyin'i deler) ve `alerts` kanalı;
+  kimlikler sunucudaki `Push:Android*ChannelId` ile aynı.
+- **Düşük donanım:** Android 7.0+ (API 24), derlenmiş XAML bağlamaları, Release'te R8 + AAB.
+- **KVKK:** Çıkışta/hesap silmede `LocalStore.ClearAsync` cihazdaki tüm veriyi siler.
+
 ### Veritabanı şeması
 
 `Database:ApplyMigrationsOnStartup=true` (Development) iken: migration varsa uygulanır, yoksa
@@ -247,6 +276,6 @@ Entegrasyon testleri Docker gerektirir (`postgis/postgis:16-3.4`, `redis:7-alpin
 - [x] Faz 3 — Balıkçı çekirdeği
 - [x] Faz 4 — Pazar
 - [x] Faz 5 — Ödeme (sandbox sağlayıcı)
-- [ ] Faz 6 — Mobil (MAUI)
+- [x] Faz 6 — Mobil (MAUI, Android derlemesi CI'da)
 - [ ] Faz 7 — Yönetim
 - [ ] Faz 8 — İkinci niş
