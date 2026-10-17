@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SahaNet.Mobile.Core.ViewModels;assembly=SahaNet.Mobile.Core"
+             xmlns:api="clr-namespace:SahaNet.Mobile.Core.Api;assembly=SahaNet.Mobile.Core"
+             x:Class="SahaNet.Mobile.Views.SeaStatusPage"
+             x:DataType="vm:SeaStatusViewModel"
+             Title="Deniz durumu">
+    <RefreshView Command="{Binding LoadCommand}" IsRefreshing="{Binding IsBusy}">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="12">
+                <!-- Tek bakışta karar: renk + ikon + kısa cümle. -->
+                <Border x:Name="VerdictCard" StrokeShape="RoundRectangle 20" Padding="20">
+                    <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
+                        <Label Text="{Binding VerdictIcon}" FontSize="64" HorizontalOptions="Center" />
+                        <Label Text="{Binding VerdictText}" FontSize="28" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" />
+                        <Label Text="{Binding Status.Port.Name}" FontSize="20" TextColor="White" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Border>
+                <Label Text="{Binding StaleText}" TextColor="{StaticResource Warning}" />
+                <Label Text="{Binding ErrorMessage}" Style="{StaticResource Error}" />
+
+                <CollectionView ItemsSource="{Binding Status.ActiveAlerts}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="api:AlertDto">
+                            <Border StrokeShape="RoundRectangle 12" BackgroundColor="#FFEBEE" Padding="12" Margin="0,4">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Title}" FontAttributes="Bold" />
+                                    <Label Text="{Binding Message}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <CollectionView ItemsSource="{Binding Status.Days}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="api:SeaDayDto">
+                            <Grid ColumnDefinitions="*,Auto" Padding="0,8">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Date, StringFormat='{0:dd MMMM dddd}'}" FontAttributes="Bold" />
+                                    <Label Text="{Binding Summary}" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="{Binding MaxWaveM, StringFormat='🌊 {0:0.0} m'}" FontSize="20" VerticalOptions="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

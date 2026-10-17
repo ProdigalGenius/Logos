@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SahaNet.Mobile.Core.ViewModels;assembly=SahaNet.Mobile.Core"
+             xmlns:api="clr-namespace:SahaNet.Mobile.Core.Api;assembly=SahaNet.Mobile.Core"
+             x:Class="SahaNet.Mobile.Views.OnboardingPage"
+             x:DataType="vm:OnboardingViewModel"
+             Title="Hoş geldiniz">
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="16">
+
+            <!-- Adım 1: Telefon -->
+            <VerticalStackLayout x:Name="PhoneStep" Spacing="12">
+                <Label Text="📱 Telefon numaranız" Style="{StaticResource Title}" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Entry Text="{Binding Phone}" Keyboard="Telephone" Placeholder="0 5XX XXX XX XX" />
+                    <Button Grid.Column="1" Style="{StaticResource MicButton}" Clicked="OnPhoneMic" />
+                </Grid>
+                <Button Text="Kod gönder" Command="{Binding SendCodeCommand}" />
+            </VerticalStackLayout>
+
+            <!-- Adım 2: Kod -->
+            <VerticalStackLayout x:Name="CodeStep" Spacing="12" IsVisible="False">
+                <Label Text="✉️ SMS ile gelen kod" Style="{StaticResource Title}" />
+                <Entry Text="{Binding Code}" Keyboard="Numeric" MaxLength="6" HorizontalTextAlignment="Center" FontSize="32" />
+                <Button Text="Doğrula" Command="{Binding VerifyCommand}" />
+            </VerticalStackLayout>
+
+            <!-- Adım 3: Rızalar + bölge -->
+            <VerticalStackLayout x:Name="ProfileStep" Spacing="12" IsVisible="False">
+                <Label Text="✅ Son adım" Style="{StaticResource Title}" />
+                <CollectionView ItemsSource="{Binding Consents}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ConsentItem">
+                            <Grid ColumnDefinitions="Auto,*" Padding="0,6">
+                                <CheckBox IsChecked="{Binding Accepted}" />
+                                <Label Grid.Column="1" Text="{Binding Document.Title}" VerticalOptions="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+                <Picker Title="Bölgeniz" ItemsSource="{Binding Regions}" SelectedItem="{Binding SelectedRegion}"
+                        ItemDisplayBinding="{Binding Name, x:DataType=api:RegionDto}" FontSize="22" />
+                <Entry Text="{Binding DisplayName}" Placeholder="Adınız (isteğe bağlı)" />
+                <Button Text="Başla" Command="{Binding CompleteCommand}" />
+            </VerticalStackLayout>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <Label Text="{Binding ErrorMessage}" Style="{StaticResource Error}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,27 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SahaNet.Mobile", "src\Mobile\SahaNet.Mobile\SahaNet.Mobile.csproj", "{B510B65F-A65A-5CF0-A330-24D9C02FC29A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SahaNet.Mobile.Core", "src\Mobile\SahaNet.Mobile.Core\SahaNet.Mobile.Core.csproj", "{EC454100-E2D3-5766-ACFB-087B36D3A18A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B510B65F-A65A-5CF0-A330-24D9C02FC29A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B510B65F-A65A-5CF0-A330-24D9C02FC29A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B510B65F-A65A-5CF0-A330-24D9C02FC29A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{B510B65F-A65A-5CF0-A330-24D9C02FC29A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B510B65F-A65A-5CF0-A330-24D9C02FC29A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B510B65F-A65A-5CF0-A330-24D9C02FC29A}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{EC454100-E2D3-5766-ACFB-087B36D3A18A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC454100-E2D3-5766-ACFB-087B36D3A18A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC454100-E2D3-5766-ACFB-087B36D3A18A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC454100-E2D3-5766-ACFB-087B36D3A18A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

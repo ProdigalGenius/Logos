@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SahaNet.Mobile.Core.ViewModels;assembly=SahaNet.Mobile.Core"
+             xmlns:api="clr-namespace:SahaNet.Mobile.Core.Api;assembly=SahaNet.Mobile.Core"
+             xmlns:data="clr-namespace:SahaNet.Mobile.Core.Data;assembly=SahaNet.Mobile.Core"
+             x:Class="SahaNet.Mobile.Views.CatchLogPage"
+             x:DataType="vm:CatchLogViewModel"
+             Title="Av günlüğü">
+    <Grid RowDefinitions="Auto,*" Padding="16" RowSpacing="12">
+        <VerticalStackLayout Spacing="10">
+            <Picker Title="🐟 Tür" ItemsSource="{Binding Species}" SelectedItem="{Binding SelectedSpecies}"
+                    ItemDisplayBinding="{Binding Name, x:DataType=api:SpeciesDto}" FontSize="22" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry Text="{Binding WeightText}" Keyboard="Numeric" Placeholder="⚖️ Kilo (kg)" />
+                <Button Grid.Column="1" Style="{StaticResource MicButton}" Clicked="OnWeightMic" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry Text="{Binding LengthText}" Keyboard="Numeric" Placeholder="📏 En büyük boy (cm, isteğe bağlı)" />
+                <Button Grid.Column="1" Style="{StaticResource MicButton}" Clicked="OnLengthMic" />
+            </Grid>
+            <Button Text="💾 Kaydet" Command="{Binding SaveCommand}" />
+            <Label Text="{Binding Message}" FontAttributes="Bold" />
+            <CollectionView ItemsSource="{Binding Warnings}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Label Text="{Binding .}" TextColor="{StaticResource Danger}" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Catches}" SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="data:CatchItem">
+                    <Grid ColumnDefinitions="*,Auto" Padding="0,8">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Catch.SpeciesName}" FontAttributes="Bold" />
+                            <Label Text="{Binding Catch.CaughtAt, StringFormat='{0:dd.MM.yyyy HH:mm}'}" FontSize="14" />
+                        </VerticalStackLayout>
+                        <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                            <Label Text="{Binding Catch.WeightKg, StringFormat='{0:0.##} kg'}" FontSize="20" />
+                            <Label Text="⏳" IsVisible="{Binding IsPending}" SemanticProperties.Description="Gönderilmeyi bekliyor" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <ApplicationTitle>BalıkçıNet</ApplicationTitle>
+    <ApplicationId>app.sahanet.balikcinet</ApplicationId>
+    <NicheColor>#0D47A1</NicheColor>
+  </PropertyGroup>
+</Project>
