@@ -78,11 +78,25 @@ jobs:
           dotnet publish src/Mobile/SahaNet.Mobile/SahaNet.Mobile.csproj -f net9.0-android -c Debug
           -p:Niche=scrap -p:AndroidPackageFormat=apk -p:EmbedAssembliesIntoApk=true -o artifacts/scrap
 
-      - name: Upload APKs
+      # Anlaşılır dosya adları: BalikciNet.apk ve HurdaNet.apk.
+      - name: Name APKs
+        run: |
+          mkdir -p apk
+          cp artifacts/fishing/*-Signed.apk apk/BalikciNet.apk
+          cp artifacts/scrap/*-Signed.apk apk/HurdaNet.apk
+          ls -la apk
+
+      - name: Upload BalıkçıNet APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-apk
-          path: artifacts/**/*-Signed.apk
+          name: BalikciNet-apk
+          path: apk/BalikciNet.apk
+
+      - name: Upload HurdaNet APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HurdaNet-apk
+          path: apk/HurdaNet.apk
 
   # Commit mesajında [migrations] varsa EF Core başlangıç migration'larını üretip dala işler.
   migrations:

@@ -16,9 +16,8 @@ docker compose --profile api up -d --build
 ## 2. APK'yı indir ve kur
 
 1. GitHub → **Actions** → `claude/sahanet-platform-architecture-mkps4g` dalının son yeşil **CI** çalışması.
-2. Sayfanın altındaki **Artifacts** bölümünden `android-apk` dosyasını indir ve zip'i aç.
-   - `fishing/…-Signed.apk` → BalıkçıNet
-   - `scrap/…-Signed.apk` → HurdaNet
+2. Sayfanın altındaki **Artifacts** bölümünden `BalikciNet-apk` veya `HurdaNet-apk` dosyasını indir; zip'in içinde
+   `BalikciNet.apk` / `HurdaNet.apk` vardır.
 3. APK'yı telefona gönder (USB, Drive, WhatsApp'ta kendine) ve aç. "Bilinmeyen kaynaklardan yükleme" izni istenirse ver.
 
 ## 3. Uygulamada
