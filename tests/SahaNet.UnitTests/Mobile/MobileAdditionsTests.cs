@@ -73,7 +73,7 @@ public sealed class MobileAdditionsTests
             }
 
             SqliteConnection.ClearAllPools();
-            (await File.ReadAllBytesAsync(path)).Should().NotContain(Encoding.UTF8.GetBytes("gizli-veri"));
+            Convert.ToHexString(await File.ReadAllBytesAsync(path)).Should().NotContain(Convert.ToHexString(Encoding.UTF8.GetBytes("gizli-veri")));
 
             var wrongKey = async () => await LocalStore.OpenAsync(path, "yanlis-anahtar");
             await wrongKey.Should().ThrowAsync<SqliteException>();
