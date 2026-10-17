@@ -67,13 +67,17 @@ public static class MauiProgram
     /// <summary>Yerel veritabanı anahtarı ilk açılışta üretilir ve cihazın güvenli deposunda (Keystore/Keychain) tutulur.</summary>
     private static string GetOrCreateDatabaseKey()
     {
-        var key = SecureStorage.Default.GetAsync(DatabaseKeyName).GetAwaiter().GetResult();
-        if (string.IsNullOrEmpty(key))
+        // Arka plan iş parçacığında çalışır (LocalStore açılışı Task.Run içinde); yine de UI bağlamını yakalamaz.
+        return Task.Run(async () =>
         {
-            key = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
-            SecureStorage.Default.SetAsync(DatabaseKeyName, key).GetAwaiter().GetResult();
-        }
+            var key = await SecureStorage.Default.GetAsync(DatabaseKeyName);
+            if (string.IsNullOrEmpty(key))
+            {
+                key = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+                await SecureStorage.Default.SetAsync(DatabaseKeyName, key);
+            }
 
-        return key;
+            return key;
+        }).GetAwaiter().GetResult();
     }
 }

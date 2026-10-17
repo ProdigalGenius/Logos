@@ -32,7 +32,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ICommunityApi>(sp => (SahaNetApiClient)sp.GetRequiredService<ISahaNetApi>());
 
         // KVKK: yerel veritabanı cihaz anahtar deposundaki anahtarla şifrelenir (SQLCipher).
-        services.AddSingleton(_ => LocalStore.OpenAsync(databasePath, databaseKey?.Invoke()).GetAwaiter().GetResult());
+        services.AddSingleton(_ => Task.Run(() => LocalStore.OpenAsync(databasePath, databaseKey?.Invoke())).GetAwaiter().GetResult());
         services.AddSingleton<SyncService>();
         services.AddSingleton<FishingRepository>();
 
