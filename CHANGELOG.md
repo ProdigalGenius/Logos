@@ -16,6 +16,8 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esas alınır
 - **Güvenlik:** HSTS + HTTPS yönlendirmesi (geliştirme/test dışı), `ForwardedHeaders` (ters proxy), yapılandırılabilir CORS
   (`Security:CorsOrigins`, varsayılan kapalı), tüm yanıtlarda `nosniff`/`X-Frame-Options`/`Referrer-Policy`.
 - **Geliştirme:** `Development:FixedOtpCode` ile SMS sağlayıcısı olmadan giriş (yalnızca Development ortamında).
+- **Deneme:** SMS'siz giriş (`/api/auth/dev-login`, yalnızca Development + `Development:PasswordlessLogin`), mobilde "Ana yönetici olarak gir".
+- **Yönetici:** `POST /api/admin/users` ile telefon numarasıyla kullanıcı ekleme (denetim kaydıyla); mobil Ayarlar'da yönetici bölümü.
 - **Dokümantasyon:** `docs/TELEFONDA-DENEME.md`.
 
 ### Değişti

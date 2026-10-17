@@ -20,6 +20,15 @@
                     <Button Grid.Column="1" Style="{StaticResource MicButton}" Clicked="OnPhoneMic" />
                 </Grid>
                 <Button Text="Kod gönder" Command="{Binding SendCodeCommand}" />
+
+                <!-- Deneme sunucusu (Development): SMS'siz giriş. -->
+                <Border StrokeShape="RoundRectangle 12" Padding="12" BackgroundColor="#FFF8E1">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="🧪 Deneme girişi (SMS yok)" FontAttributes="Bold" />
+                        <Button Text="🔑 Ana yönetici olarak gir" Clicked="OnAdminLogin" />
+                        <Button Text="Yukarıdaki numarayla kodsuz gir" BackgroundColor="Gray" Clicked="OnPasswordlessLogin" />
+                    </VerticalStackLayout>
+                </Border>
             </VerticalStackLayout>
 
             <!-- Adım 2: Kod -->

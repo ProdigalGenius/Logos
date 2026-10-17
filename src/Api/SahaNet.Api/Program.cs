@@ -1,5 +1,7 @@
 using System.Threading.RateLimiting;
 using Hangfire;
+using MediatR;
+using SahaNet.Application.Identity.Auth;
 using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -217,6 +219,16 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 
 app.MapCatalogEndpoints();
 app.MapAuthEndpoints();
+// Yalnızca geliştirme/deneme: SMS'siz giriş. Üretim ortamında asla eşlenmez.
+if (app.Environment.IsDevelopment() && app.Configuration.GetValue("Development:PasswordlessLogin", false))
+{
+    app.MapPost("/api/auth/dev-login", async (PasswordlessLoginCommand command, ISender sender, CancellationToken ct) =>
+            (await sender.Send(command, ct)).ToHttp())
+        .RequireRateLimiting(AuthEndpoints.OtpRateLimitPolicy)
+        .WithTags("Auth")
+        .WithName("DevLogin");
+}
+
 app.MapMeEndpoints();
 app.MapAlertEndpoints();
 app.MapMarketEndpoints();

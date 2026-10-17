@@ -20,6 +20,12 @@ public partial class SettingsPage : ContentPage
         };
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _viewModel.LoadCommand.ExecuteAsync(null);
+    }
+
     private async void OnDeleteClicked(object? sender, EventArgs e)
     {
         if (await DisplayAlert("Hesabı sil", "Hesabınız 30 gün sonra kalıcı olarak silinecek. Emin misiniz?", "Evet, sil", "Vazgeç"))

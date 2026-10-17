@@ -37,6 +37,12 @@ public interface ICommunityApi
     /// <summary>action: claim, release, complete, cancel.</summary>
     Task<ApiResult<PickupDto>> PickupActionAsync(Guid id, string action, CancellationToken cancellationToken);
 
+    /// <summary>Yalnızca geliştirme sunucusunda: SMS'siz giriş.</summary>
+    Task<ApiResult<AuthResult>> DevLoginAsync(string phone, CancellationToken cancellationToken);
+
+    /// <summary>Yönetici: telefon numarasıyla kullanıcı ekler.</summary>
+    Task<ApiResult<bool>> CreateUserAsync(string phone, string? role, CancellationToken cancellationToken);
+
     Task<ApiResult<string>> ExportMyDataAsync(CancellationToken cancellationToken);
 
     Task<ApiResult<bool>> RequestAccountDeletionAsync(CancellationToken cancellationToken);
@@ -100,6 +106,23 @@ public sealed partial class SahaNetApiClient : ICommunityApi
 
     public Task<ApiResult<PickupDto>> PickupActionAsync(Guid id, string action, CancellationToken cancellationToken) =>
         SendAsync<PickupDto>(HttpMethod.Post, $"api/scrap/pickups/{id}/{Uri.EscapeDataString(action)}", null, cancellationToken);
+
+    public async Task<ApiResult<AuthResult>> DevLoginAsync(string phone, CancellationToken cancellationToken)
+    {
+        var result = await SendAsync<AuthResult>(HttpMethod.Post, "api/auth/dev-login", new { phone }, cancellationToken);
+        if (result is { IsSuccess: true, Value: { } auth })
+        {
+            await tokens.SetAsync(new StoredTokens(auth.AccessToken, auth.AccessTokenExpiresAt, auth.RefreshToken));
+        }
+
+        return result;
+    }
+
+    public async Task<ApiResult<bool>> CreateUserAsync(string phone, string? role, CancellationToken cancellationToken)
+    {
+        var result = await SendAsync<JsonElement>(HttpMethod.Post, "api/admin/users", new { phone, role }, cancellationToken);
+        return result.IsSuccess ? ApiResult<bool>.Ok(true) : ApiResult<bool>.Fail(result.Outcome, result.Problem);
+    }
 
     public async Task<ApiResult<string>> ExportMyDataAsync(CancellationToken cancellationToken)
     {

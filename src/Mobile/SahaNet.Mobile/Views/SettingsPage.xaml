@@ -13,6 +13,16 @@
             <Entry Text="{Binding ServerUrl}" Keyboard="Url" Placeholder="192.168.1.20:5080" />
             <Button Text="Kaydet" Command="{Binding SaveServerCommand}" />
 
+            <VerticalStackLayout Spacing="8" IsVisible="{Binding IsAdmin}">
+                <Label Text="👥 Kullanıcı ekle (yönetici)" Style="{StaticResource Title}" FontSize="22" />
+                <Entry Text="{Binding NewUserPhone}" Keyboard="Telephone" Placeholder="0 5XX XXX XX XX" />
+                <HorizontalStackLayout>
+                    <CheckBox IsChecked="{Binding NewUserIsModerator}" />
+                    <Label Text="Moderatör olsun" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <Button Text="Ekle" Command="{Binding AddUserCommand}" />
+            </VerticalStackLayout>
+
             <Label Text="🛡️ Kişisel verilerim (KVKK)" Style="{StaticResource Title}" FontSize="22" />
             <Button Text="Verilerimi indir" Command="{Binding ExportCommand}" />
             <Button Text="Hesabımı sil" BackgroundColor="{StaticResource Danger}" Clicked="OnDeleteClicked" />

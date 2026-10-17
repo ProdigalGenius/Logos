@@ -82,7 +82,16 @@ public sealed partial class OnboardingViewModel(ISahaNetApi api, NicheProfile ni
             return;
         }
 
-        if (!result.Value!.RequiresOnboarding)
+        await ContinueAfterLoginCoreAsync(result.Value!, cancellationToken);
+    });
+
+    /// <summary>Herhangi bir giriş yolundan sonra (OTP veya test girişi): gerekiyorsa rıza/bölge adımı.</summary>
+    public Task ContinueAfterLoginAsync(AuthResult auth, CancellationToken cancellationToken) =>
+        RunAsync(() => ContinueAfterLoginCoreAsync(auth, cancellationToken));
+
+    private async Task ContinueAfterLoginCoreAsync(AuthResult auth, CancellationToken cancellationToken)
+    {
+        if (!auth.RequiresOnboarding)
         {
             Finish();
             return;
@@ -104,7 +113,7 @@ public sealed partial class OnboardingViewModel(ISahaNetApi api, NicheProfile ni
 
         SelectedRegion = Regions.FirstOrDefault(r => r.Code == niche.DefaultRegionCode);
         Step = OnboardingStep.Profile;
-    });
+    }
 
     [RelayCommand]
     private Task CompleteAsync(CancellationToken cancellationToken) => RunAsync(async () =>

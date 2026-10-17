@@ -13,6 +13,15 @@ public sealed partial class SettingsViewModel(ICommunityApi api, ITokenStore tok
     [ObservableProperty]
     private string? _statusText;
 
+    [ObservableProperty]
+    private bool _isAdmin;
+
+    [ObservableProperty]
+    private string? _newUserPhone;
+
+    [ObservableProperty]
+    private bool _newUserIsModerator;
+
     /// <summary>Platform tarafı adresi kalıcı saklar.</summary>
     public event EventHandler<Uri>? ServerChanged;
 
@@ -20,6 +29,32 @@ public sealed partial class SettingsViewModel(ICommunityApi api, ITokenStore tok
 
     /// <summary>Dışa aktarılan JSON; platform tarafı paylaşım penceresiyle sunar.</summary>
     public event EventHandler<string>? ExportReady;
+
+    [RelayCommand]
+    private async Task LoadAsync()
+    {
+        IsAdmin = JwtSubject.ReadRole((await tokens.GetAsync())?.AccessToken) == "Admin";
+    }
+
+    [RelayCommand]
+    private async Task AddUserAsync(CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(NewUserPhone))
+        {
+            StatusText = "Telefon numarası girin.";
+            return;
+        }
+
+        var result = await api.CreateUserAsync(NewUserPhone, NewUserIsModerator ? "Moderator" : "User", cancellationToken);
+        StatusText = result.IsSuccess
+            ? $"Kullanıcı eklendi: {NewUserPhone}. Çıkış yapıp bu numarayla \"kodsuz gir\" ile deneyebilirsiniz."
+            : result.ErrorMessage;
+        if (result.IsSuccess)
+        {
+            NewUserPhone = null;
+            NewUserIsModerator = false;
+        }
+    }
 
     [RelayCommand]
     private void SaveServer()

@@ -47,6 +47,11 @@ internal static class AdminEndpoints
                 (await sender.Send(new SetUserRoleCommand(id, body.Role), ct)).ToHttp())
             .WithName("SetUserRole");
 
+        admin.MapPost("/users", async (CreateUserCommand command, ISender sender, CancellationToken ct) =>
+                (await sender.Send(command, ct)).ToHttp())
+            .WithName("CreateUser")
+            .WithSummary("Telefon numarasıyla kullanıcı ekler (isteğe bağlı rol: User, Moderator, Admin).");
+
         admin.MapGet("/audit", async (int? limit, ISender sender, CancellationToken ct) =>
                 (await sender.Send(new GetAuditLogQuery(limit ?? 100), ct)).ToHttp())
             .WithName("GetAuditLog");

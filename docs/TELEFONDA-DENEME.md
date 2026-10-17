@@ -23,9 +23,13 @@ docker compose --profile api up -d --build
 ## 3. Uygulamada
 
 1. Açılış ekranının en üstündeki **🌐 Sunucu** alanına `192.168.1.20:5080` yaz (kendi IP'n).
-2. Telefon numaranı gir → **Kod gönder**.
-3. Geliştirme ortamında SMS gönderilmez; kod her zaman **123456**'dır (`Development:FixedOtpCode`).
-4. Rızaları işaretle, bölge seç → **Başla**.
+2. **🔑 Ana yönetici olarak gir** — SMS yok, kod yok. (Yönetici numarası: `0555 000 00 00`, `Identity:AdminPhones`.)
+3. Rızaları işaretle, bölge seç → **Başla**.
+4. **⚙️ Ayarlar → 👥 Kullanıcı ekle**: numara gir (isteğe bağlı moderatör) → **Ekle**.
+5. Eklediğin kullanıcıyı denemek için **Çıkış yap** → numarayı yaz → **Yukarıdaki numarayla kodsuz gir**.
+
+Kodsuz giriş yalnızca `Development` ortamında ve `Development:PasswordlessLogin=true` iken açıktır; üretimde uç nokta hiç yoktur.
+İstersen SMS akışını da deneyebilirsin: **Kod gönder** → kod her zaman `123456`.
 
 Sunucu adresini sonradan **⚙️ Ayarlar** ekranından değiştirebilirsin.
 

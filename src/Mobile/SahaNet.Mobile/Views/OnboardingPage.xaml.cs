@@ -9,12 +9,17 @@ public partial class OnboardingPage : ContentPage
 {
     private readonly OnboardingViewModel _viewModel;
     private readonly IVoiceInput _voice;
-    private readonly ApiEndpoint _endpoint;
+    /// <summary>Geliştirme sunucusunda <c>Identity:AdminPhones</c> içindeki ana yönetici numarası.</summary>
+    private const string AdminPhone = "05550000000";
 
-    public OnboardingPage(OnboardingViewModel viewModel, IVoiceInput voice, ApiEndpoint endpoint)
+    private readonly ApiEndpoint _endpoint;
+    private readonly ICommunityApi _community;
+
+    public OnboardingPage(OnboardingViewModel viewModel, IVoiceInput voice, ApiEndpoint endpoint, ICommunityApi community)
     {
         InitializeComponent();
         _endpoint = endpoint;
+        _community = community;
         ServerEntry.Text = endpoint.BaseUrl.ToString();
         BindingContext = _viewModel = viewModel;
         _voice = voice;
@@ -32,6 +37,24 @@ public partial class OnboardingPage : ContentPage
         PhoneStep.IsVisible = _viewModel.Step == OnboardingStep.Phone;
         CodeStep.IsVisible = _viewModel.Step == OnboardingStep.Code;
         ProfileStep.IsVisible = _viewModel.Step == OnboardingStep.Profile;
+    }
+
+    private async void OnAdminLogin(object? sender, EventArgs e) => await DevLoginAsync(AdminPhone);
+
+    private async void OnPasswordlessLogin(object? sender, EventArgs e) => await DevLoginAsync(_viewModel.Phone);
+
+    private async Task DevLoginAsync(string phone)
+    {
+        OnServerUnfocused(this, new FocusEventArgs(ServerEntry, false));
+        var result = await _community.DevLoginAsync(phone, CancellationToken.None);
+        if (result.Value is { } auth)
+        {
+            await _viewModel.ContinueAfterLoginAsync(auth, CancellationToken.None);
+        }
+        else
+        {
+            await DisplayAlert("Giriş yapılamadı", result.ErrorMessage ?? "Bilinmeyen hata", "Tamam");
+        }
     }
 
     private void OnServerUnfocused(object? sender, FocusEventArgs e)
