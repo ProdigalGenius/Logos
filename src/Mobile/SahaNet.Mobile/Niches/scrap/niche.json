@@ -4,10 +4,13 @@
   "primaryColor": "#E65100",
   "defaultRegionCode": "34",
   "defaultPortCode": null,
+  "emergencyNumber": "112",
   "tiles": [
     { "key": "pickups", "title": "Toplama talepleri", "icon": "🚚", "route": "pickups" },
     { "key": "prices", "title": "Hurda fiyatları", "icon": "💰", "route": "prices" },
     { "key": "market", "title": "Pazar", "icon": "🛒", "route": "market" },
-    { "key": "alerts", "title": "Duyurular", "icon": "📣", "route": "alerts" }
+    { "key": "messages", "title": "Mesajlar", "icon": "💬", "route": "messages" },
+    { "key": "alerts", "title": "Duyurular", "icon": "📣", "route": "alerts" },
+    { "key": "settings", "title": "Ayarlar", "icon": "⚙️", "route": "settings" }
   ]
 }

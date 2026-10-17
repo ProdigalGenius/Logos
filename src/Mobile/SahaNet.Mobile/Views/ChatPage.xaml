@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SahaNet.Mobile.Core.ViewModels;assembly=SahaNet.Mobile.Core"
+             xmlns:api="clr-namespace:SahaNet.Mobile.Core.Api;assembly=SahaNet.Mobile.Core"
+             xmlns:data="clr-namespace:SahaNet.Mobile.Core.Data;assembly=SahaNet.Mobile.Core"
+             x:Class="SahaNet.Mobile.Views.ChatPage"
+             x:DataType="vm:ChatViewModel"
+             Title="Sohbet">
+    <Grid RowDefinitions="*,Auto,Auto" Padding="12" RowSpacing="8">
+        <CollectionView x:Name="MessageList" ItemsSource="{Binding Messages}" SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ChatLine">
+                    <Grid Padding="0,4">
+                        <Border StrokeShape="RoundRectangle 12" Padding="10" MaximumWidthRequest="320">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsMine}" Value="True">
+                                    <Setter Property="HorizontalOptions" Value="End" />
+                                    <Setter Property="BackgroundColor" Value="#E3F2FD" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsMine}" Value="False">
+                                    <Setter Property="HorizontalOptions" Value="Start" />
+                                    <Setter Property="BackgroundColor" Value="#F5F5F5" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Text}" />
+                                <Label Text="{Binding SentAt, StringFormat='{0:HH:mm}'}" FontSize="12" HorizontalOptions="End" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <Label Grid.Row="1" Text="{Binding StatusText}" Style="{StaticResource Error}" />
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Entry Text="{Binding Draft}" Placeholder="Mesaj yazın" ReturnCommand="{Binding SendCommand}" />
+            <Button Grid.Column="1" Text="➤" Command="{Binding SendCommand}" />
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using SahaNet.Mobile.Core.Api;
 using SahaNet.Mobile.Core.ViewModels;
 using SahaNet.Mobile.Services;
 
@@ -8,10 +9,13 @@ public partial class OnboardingPage : ContentPage
 {
     private readonly OnboardingViewModel _viewModel;
     private readonly IVoiceInput _voice;
+    private readonly ApiEndpoint _endpoint;
 
-    public OnboardingPage(OnboardingViewModel viewModel, IVoiceInput voice)
+    public OnboardingPage(OnboardingViewModel viewModel, IVoiceInput voice, ApiEndpoint endpoint)
     {
         InitializeComponent();
+        _endpoint = endpoint;
+        ServerEntry.Text = endpoint.BaseUrl.ToString();
         BindingContext = _viewModel = viewModel;
         _voice = voice;
         _viewModel.PropertyChanged += OnViewModelChanged;
@@ -28,6 +32,16 @@ public partial class OnboardingPage : ContentPage
         PhoneStep.IsVisible = _viewModel.Step == OnboardingStep.Phone;
         CodeStep.IsVisible = _viewModel.Step == OnboardingStep.Code;
         ProfileStep.IsVisible = _viewModel.Step == OnboardingStep.Profile;
+    }
+
+    private void OnServerUnfocused(object? sender, FocusEventArgs e)
+    {
+        if (ApiEndpoint.TryParse(ServerEntry.Text, out var uri))
+        {
+            _endpoint.BaseUrl = uri;
+            Preferences.Default.Set(MauiProgram.ServerUrlKey, uri.ToString());
+            ServerEntry.Text = uri.ToString();
+        }
     }
 
     private async void OnPhoneMic(object? sender, EventArgs e)

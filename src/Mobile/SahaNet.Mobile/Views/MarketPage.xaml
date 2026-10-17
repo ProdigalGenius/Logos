@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SahaNet.Mobile.Core.ViewModels;assembly=SahaNet.Mobile.Core"
+             xmlns:api="clr-namespace:SahaNet.Mobile.Core.Api;assembly=SahaNet.Mobile.Core"
+             xmlns:data="clr-namespace:SahaNet.Mobile.Core.Data;assembly=SahaNet.Mobile.Core"
+             x:Class="SahaNet.Mobile.Views.MarketPage"
+             x:DataType="vm:MarketViewModel"
+             Title="Pazar">
+    <RefreshView Command="{Binding LoadCommand}" IsRefreshing="{Binding IsBusy}">
+        <CollectionView ItemsSource="{Binding Listings}" SelectionMode="None" Margin="16,0">
+            <CollectionView.Header>
+                <VerticalStackLayout Spacing="8" Padding="0,12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Entry Text="{Binding SearchText}" Placeholder="🔍 Ara" ReturnCommand="{Binding LoadCommand}" />
+                        <Button Grid.Column="1" Text="Ara" Command="{Binding LoadCommand}" />
+                    </Grid>
+                    <Border StrokeShape="RoundRectangle 12" Padding="12" BackgroundColor="#F5F5F5">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="➕ İlan ver" Style="{StaticResource Title}" FontSize="22" />
+                            <Picker Title="Kategori" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
+                                    ItemDisplayBinding="{Binding Name, x:DataType=api:CategoryDto}" FontSize="20" />
+                            <Entry Text="{Binding Title}" Placeholder="Başlık" />
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Entry Text="{Binding Price}" Keyboard="Numeric" Placeholder="Fiyat (₺)" />
+                                <Entry Grid.Column="1" Text="{Binding Quantity}" Keyboard="Numeric" Placeholder="Miktar" />
+                            </Grid>
+                            <Entry Text="{Binding Description}" Placeholder="Açıklama (isteğe bağlı)" />
+                            <Button Text="Yayınla" Command="{Binding CreateCommand}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Label Text="{Binding StatusText}" />
+                </VerticalStackLayout>
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="api:ListingDto">
+                    <Border StrokeShape="RoundRectangle 12" Padding="12" Margin="0,4">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="20" />
+                                <Label Text="{Binding PriceText}" FontSize="18" />
+                                <Label Text="{Binding SellerName}" FontSize="14" />
+                            </VerticalStackLayout>
+                            <Button Grid.Column="1" Text="💬" VerticalOptions="Center"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MarketViewModel}}, Path=ContactCommand, x:DataType=vm:MarketViewModel}"
+                                    CommandParameter="{Binding .}" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </RefreshView>
+</ContentPage>

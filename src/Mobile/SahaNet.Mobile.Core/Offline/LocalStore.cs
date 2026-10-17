@@ -20,9 +20,15 @@ public sealed class LocalStore : IAsyncDisposable
 
     private LocalStore(SqliteConnection connection) => _connection = connection;
 
-    public static async Task<LocalStore> OpenAsync(string databasePath, CancellationToken cancellationToken = default)
+    public static async Task<LocalStore> OpenAsync(string databasePath, string? encryptionKey = null, CancellationToken cancellationToken = default)
     {
-        var connection = new SqliteConnection(databasePath == ":memory:" ? "Data Source=:memory:" : $"Data Source={databasePath}");
+        var builder = new SqliteConnectionStringBuilder { DataSource = databasePath };
+        if (!string.IsNullOrEmpty(encryptionKey))
+        {
+            builder.Password = encryptionKey;
+        }
+
+        var connection = new SqliteConnection(builder.ToString());
         await connection.OpenAsync(cancellationToken);
 
         await using var command = connection.CreateCommand();

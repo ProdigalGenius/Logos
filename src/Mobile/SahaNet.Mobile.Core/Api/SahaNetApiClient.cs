@@ -41,7 +41,7 @@ public interface ISahaNetApi
     Task<ApiResult<bool>> RegisterDeviceAsync(string token, string platform, CancellationToken cancellationToken);
 }
 
-public sealed class SahaNetApiClient(HttpClient http, ITokenStore tokens) : ISahaNetApi
+public sealed partial class SahaNetApiClient(HttpClient http, ITokenStore tokens) : ISahaNetApi
 {
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 

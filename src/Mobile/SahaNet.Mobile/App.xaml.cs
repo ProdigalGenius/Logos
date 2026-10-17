@@ -24,4 +24,6 @@ public partial class App : Application
     }
 
     public void ShowShell() => Windows[0].Page = _services.GetRequiredService<AppShell>();
+
+    public void ShowOnboarding() => Windows[0].Page = _services.GetRequiredService<OnboardingPage>();
 }

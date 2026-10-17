@@ -4,6 +4,24 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esas alınır
 
 ## [Unreleased]
 
+### Eklendi — Yayın öncesi iyileştirmeler
+- **Mobil:** Uyarılar, Av noktalarım (bulunduğum konumdan ekleme), Pazar (arama, sabit fiyatlı ilan, ilan sahibine yazma),
+  Mesajlar ve sohbet, HurdaNet toplama talepleri (oluştur/üstlen/tamamla/iptal) ve hurda fiyatları, Ayarlar
+  (sunucu adresi, verilerimi indir, hesabımı sil, çıkış), 🆘 acil durum (niş profilindeki numara + konum SMS).
+- **Mobil:** Sunucu adresi çalışma anında değiştirilebilir (test kurulumu); Debug APK yerel ağda HTTP'ye izin verir.
+- **KVKK:** Cihazdaki SQLite veritabanı SQLCipher ile şifrelenir; anahtar Keystore/Keychain'de üretilip saklanır.
+- **CI:** Telefona kurulabilir APK artefaktı (`android-apk`), kapsam eşiği (toplam ≥ %70, Application ≥ %85 — ölçülen %86,3 / %86,7),
+  `[migrations]` etiketiyle EF Core migration üretimi.
+- **Veritabanı:** Çekirdek, balıkçılık ve hurda bağlamları için başlangıç migration'ları; açılışta `Migrate` uygulanır.
+- **Güvenlik:** HSTS + HTTPS yönlendirmesi (geliştirme/test dışı), `ForwardedHeaders` (ters proxy), yapılandırılabilir CORS
+  (`Security:CorsOrigins`, varsayılan kapalı), tüm yanıtlarda `nosniff`/`X-Frame-Options`/`Referrer-Policy`.
+- **Geliştirme:** `Development:FixedOtpCode` ile SMS sağlayıcısı olmadan giriş (yalnızca Development ortamında).
+- **Dokümantasyon:** `docs/TELEFONDA-DENEME.md`.
+
+### Değişti
+- **Performans:** Uyarı dağıtımı abone başına kullanıcı/cihaz sorgusu yerine toplu okuma yapar (N+1 giderildi); sohbet listesi
+  katılımcı adlarını tek sorguda okur.
+
 ### Faz 8 — İkinci niş (HurdaNet)
 - `SahaNet.Modules.Scrap`: malzeme kataloğu, günlük hurda fiyatları (medyan), adres gizliliği korumalı toplama talebi akışı.
 - Çekirdek pazara `scrap-lot` ve `scrap-equipment` kategorileri; KVKK dışa aktarım/silme, yönetim metrikleri, şema başlatıcı.

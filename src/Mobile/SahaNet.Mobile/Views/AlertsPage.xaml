@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:SahaNet.Mobile.Core.ViewModels;assembly=SahaNet.Mobile.Core"
+             xmlns:api="clr-namespace:SahaNet.Mobile.Core.Api;assembly=SahaNet.Mobile.Core"
+             xmlns:data="clr-namespace:SahaNet.Mobile.Core.Data;assembly=SahaNet.Mobile.Core"
+             x:Class="SahaNet.Mobile.Views.AlertsPage"
+             x:DataType="vm:AlertsViewModel"
+             Title="Uyarılar">
+    <RefreshView Command="{Binding LoadCommand}" IsRefreshing="{Binding IsBusy}">
+        <CollectionView ItemsSource="{Binding Alerts}" SelectionMode="None" Margin="16">
+            <CollectionView.Header>
+                <Label Text="{Binding StatusText}" Margin="0,0,0,8" />
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="api:AlertDto">
+                    <Border StrokeShape="RoundRectangle 12" BackgroundColor="#FFEBEE" Padding="12" Margin="0,4">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding Title, StringFormat='⚠️ {0}'}" FontAttributes="Bold" FontSize="20" />
+                            <Label Text="{Binding Message}" />
+                            <Label Text="{Binding ValidTo, StringFormat='Geçerlilik: {0:dd.MM HH:mm}'}" FontSize="14" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </RefreshView>
+</ContentPage>

@@ -10,6 +10,9 @@
         <VerticalStackLayout Padding="24" Spacing="16">
 
             <!-- Adım 1: Telefon -->
+            <!-- Test kurulumu: sunucu adresi (ör. aynı Wi-Fi'deki bilgisayar). -->
+            <Entry x:Name="ServerEntry" Keyboard="Url" FontSize="16" Placeholder="🌐 Sunucu: 192.168.1.20:5080" Unfocused="OnServerUnfocused" />
+
             <VerticalStackLayout x:Name="PhoneStep" Spacing="12">
                 <Label Text="📱 Telefon numaranız" Style="{StaticResource Title}" />
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">

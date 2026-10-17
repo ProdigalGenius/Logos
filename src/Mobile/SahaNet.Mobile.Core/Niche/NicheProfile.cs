@@ -15,7 +15,8 @@ public sealed record NicheProfile(
     string PrimaryColor,
     string DefaultRegionCode,
     string? DefaultPortCode,
-    IReadOnlyList<NicheTile> Tiles)
+    IReadOnlyList<NicheTile> Tiles,
+    string? EmergencyNumber = null)
 {
     public static NicheProfile Load(Stream json)
     {

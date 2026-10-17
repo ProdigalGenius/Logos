@@ -40,6 +40,8 @@ Yeni modül eklemek: `src/Modules/SahaNet.Modules.<Ad>` oluştur, `IModuleDescri
 
 ## Çalıştırma
 
+> 📱 Telefonda denemek için: [docs/TELEFONDA-DENEME.md](docs/TELEFONDA-DENEME.md)
+
 ```bash
 docker compose up -d                 # PostgreSQL 16 + PostGIS, Redis
 dotnet run --project src/Api/SahaNet.Api
