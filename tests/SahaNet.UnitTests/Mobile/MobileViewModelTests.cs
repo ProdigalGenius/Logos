@@ -66,7 +66,7 @@ public class MobileViewModelTests
     [Theory]
     [InlineData("2,5", 2.5)]
     [InlineData("2.5 kg", 2.5)]
-    [InlineData(" 12 ", 12)]
+    [InlineData(" 12 ", 12.0)]
     [InlineData("", null)]
     [InlineData("iki", null)]
     [InlineData("0", null)]
