@@ -23,12 +23,12 @@ docker compose --profile api up -d --build
 ## 3. Uygulamada
 
 1. Açılış ekranının en üstündeki **🌐 Sunucu** alanına `192.168.1.20:5080` yaz (kendi IP'n).
-2. **🔑 Ana yönetici olarak gir** — SMS yok, kod yok. (Yönetici numarası: `0555 000 00 00`, `Identity:AdminPhones`.)
+2. **Ana yönetici olarak gir** — SMS yok, kod yok. Ana yönetici: `0532 333 03 24` (`Identity:AdminPhones`). Yönetici her şeyi yapar: kullanıcı ekleme, rol, askıya alma, moderasyon (web paneli: `http://<IP>:5080/admin`).
 3. Rızaları işaretle, bölge seç → **Başla**.
 4. **⚙️ Ayarlar → 👥 Kullanıcı ekle**: numara gir (isteğe bağlı moderatör) → **Ekle**.
-5. Eklediğin kullanıcıyı denemek için **Çıkış yap** → numarayı yaz → **Yukarıdaki numarayla kodsuz gir**.
+5. Diğer kullanıcılar normal giriş yapar: numara → **Kod gönder** → kod `123456` (deneme sunucusunda SMS gönderilmez).
 
-Kodsuz giriş yalnızca `Development` ortamında ve `Development:PasswordlessLogin=true` iken açıktır; üretimde uç nokta hiç yoktur.
+Kodsuz giriş yalnızca ana yönetici numarası için, `Development` ortamında ve `Development:PasswordlessLogin=true` iken açıktır; üretimde uç nokta hiç yoktur.
 İstersen SMS akışını da deneyebilirsin: **Kod gönder** → kod her zaman `123456`.
 
 Sunucu adresini sonradan **⚙️ Ayarlar** ekranından değiştirebilirsin.

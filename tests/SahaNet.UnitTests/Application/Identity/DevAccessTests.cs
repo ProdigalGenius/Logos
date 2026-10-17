@@ -1,5 +1,6 @@
 using SahaNet.Application.Identity.Auth;
 using SahaNet.Application.Moderation;
+using SahaNet.Application.Options;
 using SahaNet.Domain.Identity;
 using SahaNet.Domain.Moderation;
 using SahaNet.UnitTests.Fakes;
@@ -11,6 +12,8 @@ public class DevAccessTests
     private readonly IdentityHarness _h = new();
     private readonly FakeCurrentUser _current = new();
     private readonly RecordingAudit _audit = new();
+
+    public DevAccessTests() => _h.Settings = new IdentityOptions { AdminPhones = [IdentityHarness.ValidPhone] };
 
     private PasswordlessLoginCommandHandler LoginHandler() =>
         new(_h.Users, _h.Protector, _h.TokenIssuer, _h.UnitOfWork, _h.Clock, _h.Options);
@@ -25,8 +28,16 @@ public class DevAccessTests
         var second = await LoginHandler().Handle(new PasswordlessLoginCommand(IdentityHarness.ValidPhone), CancellationToken.None);
 
         first.Value.IsNewUser.Should().BeTrue();
+        _h.Users.Items[0].Role.Should().Be(UserRole.Admin);
         second.Value.IsNewUser.Should().BeFalse();
         _h.Users.Items.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task PasswordlessLogin_NonAdminPhone_IsRejected()
+    {
+        (await LoginHandler().Handle(new PasswordlessLoginCommand("0533 000 00 00"), CancellationToken.None)).IsFailure.Should().BeTrue();
+        _h.Users.Items.Should().BeEmpty();
     }
 
     [Fact]

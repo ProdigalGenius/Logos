@@ -24,9 +24,9 @@
                 <!-- Deneme sunucusu (Development): SMS'siz giriş. -->
                 <Border StrokeShape="RoundRectangle 12" Padding="12" BackgroundColor="#FFF8E1">
                     <VerticalStackLayout Spacing="8">
-                        <Label Text="🧪 Deneme girişi (SMS yok)" FontAttributes="Bold" />
-                        <Button Text="🔑 Ana yönetici olarak gir" Clicked="OnAdminLogin" />
-                        <Button Text="Yukarıdaki numarayla kodsuz gir" BackgroundColor="Gray" Clicked="OnPasswordlessLogin" />
+                        <Label Text="🔑 Ana yönetici girişi (0532 333 03 24, kodsuz)" FontAttributes="Bold" />
+                        <Button Text="Ana yönetici olarak gir" Clicked="OnAdminLogin" />
+                        <Label Text="Diğer kullanıcılar: numara → Kod gönder (deneme sunucusunda kod 123456)." FontSize="14" />
                     </VerticalStackLayout>
                 </Border>
             </VerticalStackLayout>

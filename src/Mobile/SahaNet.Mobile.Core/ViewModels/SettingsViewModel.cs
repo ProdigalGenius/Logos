@@ -47,7 +47,7 @@ public sealed partial class SettingsViewModel(ICommunityApi api, ITokenStore tok
 
         var result = await api.CreateUserAsync(NewUserPhone, NewUserIsModerator ? "Moderator" : "User", cancellationToken);
         StatusText = result.IsSuccess
-            ? $"Kullanıcı eklendi: {NewUserPhone}. Çıkış yapıp bu numarayla \"kodsuz gir\" ile deneyebilirsiniz."
+            ? $"Kullanıcı eklendi: {NewUserPhone}. Bu numarayla \"Kod gönder\" ile giriş yapılabilir."
             : result.ErrorMessage;
         if (result.IsSuccess)
         {

@@ -10,7 +10,7 @@ using SahaNet.Domain.Identity;
 namespace SahaNet.Application.Identity.Auth;
 
 /// <summary>
-/// Yalnızca geliştirme/deneme: SMS doğrulaması olmadan giriş. Uç nokta yalnızca Development ortamında ve
+/// Yalnızca geliştirme/deneme: tanımlı ana yönetici numarası için SMS doğrulaması olmadan giriş. Uç nokta yalnızca Development ortamında ve
 /// <c>Development:PasswordlessLogin</c> açıkken eşlenir; üretimde bu komutu çağıran bir yol yoktur.
 /// </summary>
 public sealed record PasswordlessLoginCommand(string Phone) : IRequest<Result<AuthResponse>>;
@@ -38,6 +38,12 @@ internal sealed class PasswordlessLoginCommandHandler(
         }
 
         var phone = phoneResult.Value;
+        if (!options.Value.AdminPhones.Any(p => PhoneNumber.Create(p) is { IsSuccess: true } a && a.Value == phone))
+        {
+            // Kodsuz giriş yalnızca tanımlı ana yönetici numarası içindir; diğer herkes normal (OTP) girişi kullanır.
+            return Result.Failure<AuthResponse>(IdentityErrors.OtpInvalid);
+        }
+
         var now = clock.UtcNow;
         var phoneHash = protector.ComputeLookupHash(phone.Value);
 
@@ -55,10 +61,7 @@ internal sealed class PasswordlessLoginCommandHandler(
         }
 
         user.RecordLogin(now);
-        if (user.Role == UserRole.User && options.Value.AdminPhones.Any(p => PhoneNumber.Create(p) is { IsSuccess: true } a && a.Value == phone))
-        {
-            user.AssignRole(UserRole.Admin);
-        }
+        user.AssignRole(UserRole.Admin);
 
         var (response, _) = tokenIssuer.Issue(user, Guid.NewGuid(), isNewUser);
         await unitOfWork.SaveChangesAsync(cancellationToken);

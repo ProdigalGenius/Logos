@@ -33,7 +33,7 @@ internal sealed class IdentityHarness
 
     public InMemoryConsents Consents { get; } = new();
 
-    public IdentityOptions Settings { get; } = new();
+    public IdentityOptions Settings { get; set; } = new();
 
     public FakeModule[] Modules { get; } = [new("fishing")];
 

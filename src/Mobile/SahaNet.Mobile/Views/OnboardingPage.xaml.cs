@@ -10,7 +10,7 @@ public partial class OnboardingPage : ContentPage
     private readonly OnboardingViewModel _viewModel;
     private readonly IVoiceInput _voice;
     /// <summary>Geliştirme sunucusunda <c>Identity:AdminPhones</c> içindeki ana yönetici numarası.</summary>
-    private const string AdminPhone = "05550000000";
+    private const string AdminPhone = "05323330324";
 
     private readonly ApiEndpoint _endpoint;
     private readonly ICommunityApi _community;
@@ -41,8 +41,6 @@ public partial class OnboardingPage : ContentPage
 
     private async void OnAdminLogin(object? sender, EventArgs e) => await DevLoginAsync(AdminPhone);
 
-    private async void OnPasswordlessLogin(object? sender, EventArgs e) => await DevLoginAsync(_viewModel.Phone);
-
     private async Task DevLoginAsync(string phone)
     {
         OnServerUnfocused(this, new FocusEventArgs(ServerEntry, false));
@@ -53,7 +51,10 @@ public partial class OnboardingPage : ContentPage
         }
         else
         {
-            await DisplayAlert("Giriş yapılamadı", result.ErrorMessage ?? "Bilinmeyen hata", "Tamam");
+            var detail = result.Outcome == ApiOutcome.Transient
+                ? $"Sunucuya ulaşılamadı: {_endpoint.BaseUrl}\n\n• Bilgisayarda sunucu çalışıyor mu? (docker compose --profile api up -d)\n• Telefon ve bilgisayar aynı Wi-Fi'de mi?\n• Bilgisayarın güvenlik duvarı 5080 portuna izin veriyor mu?\n• Telefonun tarayıcısında {_endpoint.BaseUrl}health/live açılıyor mu?"
+                : result.ErrorMessage ?? "Bilinmeyen hata";
+            await DisplayAlert("Giriş yapılamadı", detail, "Tamam");
         }
     }
 
