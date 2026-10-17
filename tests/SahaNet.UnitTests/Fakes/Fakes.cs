@@ -105,6 +105,17 @@ internal sealed class InMemoryUsers : IUserRepository
     public Task<IReadOnlyList<User>> GetPendingDeletionRequestedBeforeAsync(DateTimeOffset threshold, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<User>>(Items.Where(u => u.Status == UserStatus.PendingDeletion && u.DeletionRequestedAt <= threshold).ToList());
 
+    public Task<(IReadOnlyList<User> Items, int Total)> SearchAsync(
+        string? phoneHash, string? text, UserStatus? status, int page, int pageSize, CancellationToken cancellationToken)
+    {
+        var found = Items
+            .Where(u => phoneHash is null || u.PhoneHash == phoneHash)
+            .Where(u => text is null || (u.DisplayName?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false))
+            .Where(u => status is null || u.Status == status)
+            .ToList();
+        return Task.FromResult<(IReadOnlyList<User>, int)>((found.Skip((page - 1) * pageSize).Take(pageSize).ToList(), found.Count));
+    }
+
     public void Add(User user) => Items.Add(user);
 
     public void Remove(User user) => Items.Remove(user);
