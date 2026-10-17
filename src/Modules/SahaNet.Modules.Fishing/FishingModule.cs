@@ -36,6 +36,7 @@ public static class FishingModule
         services.AddScoped<IModuleSchemaInitializer, FishingSchemaInitializer>();
         services.AddScoped<IPersonalDataSection, FishingPersonalDataSection>();
         services.AddSingleton<IListingCategoryProvider, FishingListingCategories>();
+        services.AddScoped<SahaNet.Application.Moderation.IAdminMetricsSection, FishingAdminMetrics>();
 
         return services;
     }

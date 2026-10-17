@@ -87,7 +87,7 @@ public class PaymentFlowTests(SahaNetApiFactory factory)
 
         (await seller.GetAsync(new Uri("/api/admin/payments/disputes", UriKind.Relative))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
 
-        var (admin, _) = await factory.LoginAsync(SahaNetApiFactory.AdminPhone);
+        var admin = await factory.GetAdminClientAsync();
         var disputes = await admin.GetFromJsonAsync<List<PaymentOrderResponse>>("/api/admin/payments/disputes");
         disputes.Should().Contain(d => d.Id == checkout.Order.Id && d.DisputeReason == "Balıklar bayat geldi");
 

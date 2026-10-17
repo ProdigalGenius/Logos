@@ -17,5 +17,7 @@ public static class IdentityErrors
     public static readonly Error RegionUnknown = new("identity.region_unknown", "Seçilen il bulunamadı.", ErrorType.Validation);
     public static readonly Error DisplayNameInvalid = new("identity.display_name_invalid", "Ad en fazla 50 karakter olabilir.", ErrorType.Validation);
     public static readonly Error AccountPendingDeletion = new("identity.pending_deletion", "Hesap silinmek üzere işaretli.", ErrorType.Conflict);
+    public static readonly Error AccountSuspended = new("identity.suspended", "Hesabınız askıya alındı. Destek ile iletişime geçin.", ErrorType.Forbidden);
+    public static readonly Error AccountNotSuspended = new("identity.not_suspended", "Hesap askıda değil.", ErrorType.Conflict);
     public static readonly Error AccountNotPendingDeletion = new("identity.not_pending_deletion", "Hesap için silme talebi yok.", ErrorType.Conflict);
 }

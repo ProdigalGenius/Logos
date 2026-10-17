@@ -180,4 +180,17 @@ public class AuthHandlerTests
         result.IsSuccess.Should().BeTrue();
         _h.RefreshTokens.Items.Should().OnlyContain(t => t.IsRevoked);
     }
+
+    [Fact]
+    public async Task VerifyOtp_SuspendedUser_IsRejected()
+    {
+        await LoginAsync();
+        _h.Users.Items[0].Suspend("Dolandırıcılık");
+        _h.Clock.Advance(_h.Settings.OtpResendCooldown);
+        await RequestHandler().Handle(new RequestOtpCommand(IdentityHarness.ValidPhone), CancellationToken.None);
+
+        var result = await VerifyHandler().Handle(new VerifyOtpCommand(IdentityHarness.ValidPhone, "123456"), CancellationToken.None);
+
+        result.Error.Should().Be(IdentityErrors.AccountSuspended);
+    }
 }

@@ -78,6 +78,29 @@ public sealed class SahaNetApiFactory : WebApplicationFactory<Program>, IAsyncLi
     /// <summary>Her test için benzersiz geçerli cep telefonu numarası.</summary>
     public static string NewPhone() => "05" + RandomNumberGenerator.GetInt32(100_000_000, 999_999_999).ToString(System.Globalization.CultureInfo.InvariantCulture);
 
+    private readonly SemaphoreSlim _adminLock = new(1, 1);
+    private AuthResponse? _adminAuth;
+
+    /// <summary>
+    /// Yönetici oturumu bir kez açılır ve paylaşılır (aynı numaraya art arda kod istemek OTP bekleme süresine takılır).
+    /// </summary>
+    public async Task<HttpClient> GetAdminClientAsync()
+    {
+        await _adminLock.WaitAsync();
+        try
+        {
+            _adminAuth ??= (await LoginAsync(AdminPhone)).Auth;
+        }
+        finally
+        {
+            _adminLock.Release();
+        }
+
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _adminAuth.AccessToken);
+        return client;
+    }
+
     /// <summary>Giriş + zorunlu rızalar + balıkçı nişi ile kurulum (ilan verebilen kullanıcı).</summary>
     public async Task<(HttpClient Client, AuthResponse Auth)> LoginOnboardedAsync(string displayName = "Reis")
     {

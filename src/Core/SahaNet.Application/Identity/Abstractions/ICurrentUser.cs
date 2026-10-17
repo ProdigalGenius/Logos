@@ -7,4 +7,7 @@ public interface ICurrentUser
 
     /// <summary>Erişim belirtecindeki rol yönetici mi.</summary>
     bool IsAdmin { get; }
+
+    /// <summary>Moderatör veya yönetici.</summary>
+    bool IsModerator { get; }
 }

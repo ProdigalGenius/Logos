@@ -18,6 +18,31 @@ internal sealed class UserRepository(SahaNetDbContext db) : IUserRepository
             .Where(u => u.Status == UserStatus.PendingDeletion && u.DeletionRequestedAt <= threshold)
             .ToListAsync(cancellationToken);
 
+    public async Task<(IReadOnlyList<User> Items, int Total)> SearchAsync(
+        string? phoneHash, string? text, UserStatus? status, int page, int pageSize, CancellationToken cancellationToken)
+    {
+        var query = db.Users.AsNoTracking();
+        if (phoneHash is not null)
+        {
+            query = query.Where(u => u.PhoneHash == phoneHash);
+        }
+
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            var pattern = "%" + text.Trim().Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
+            query = query.Where(u => u.DisplayName != null && EF.Functions.ILike(u.DisplayName, pattern));
+        }
+
+        if (status is { } s)
+        {
+            query = query.Where(u => u.Status == s);
+        }
+
+        var total = await query.CountAsync(cancellationToken);
+        var items = await query.OrderByDescending(u => u.CreatedAt).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+        return (items, total);
+    }
+
     public void Add(User user) => db.Users.Add(user);
 
     public void Remove(User user) => db.Users.Remove(user);

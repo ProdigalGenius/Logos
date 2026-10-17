@@ -20,6 +20,9 @@ public enum ListingStatus
     Sold = 1,
     Expired = 2,
     Cancelled = 3,
+
+    /// <summary>Moderasyon kararıyla yayından kaldırıldı.</summary>
+    Removed = 4,
 }
 
 public sealed record OfferPlaced(Guid ListingId, Guid OfferId, Guid SellerId, Guid BuyerId) : Events.DomainEvent;
@@ -104,6 +107,8 @@ public sealed class Listing : AggregateRoot<Guid>
     /// sıraya sokar (iki kişi aynı anda "en yüksek" olamaz).
     /// </summary>
     public DateTimeOffset LastActivityAt { get; private set; }
+
+    public string? ModerationNote { get; private set; }
 
     public IReadOnlyCollection<Offer> Offers => _offers.AsReadOnly();
 
@@ -318,6 +323,21 @@ public sealed class Listing : AggregateRoot<Guid>
 
         // Kabul edilmiş ön siparişler korunur; yalnızca bekleyenler kapanır.
         Close(ListingStatus.Cancelled);
+        return Result.Success();
+    }
+
+    /// <summary>Moderatör ilanı yayından kaldırır; bekleyen teklifler reddedilir.</summary>
+    public Result RemoveByModerator(string reason, DateTimeOffset now)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        if (Status == ListingStatus.Removed)
+        {
+            return Result.Failure(MarketErrors.ListingNotActive);
+        }
+
+        ModerationNote = reason.Trim();
+        LastActivityAt = now;
+        Close(ListingStatus.Removed);
         return Result.Success();
     }
 

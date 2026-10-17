@@ -10,3 +10,5 @@ public sealed record UserDeletionRequested(Guid UserId, DateTimeOffset Scheduled
 
 /// <summary>Kalıcı silme öncesi yayınlanır; modüller kendi kişisel verilerini temizler.</summary>
 public sealed record UserPurged(Guid UserId) : DomainEvent;
+
+public sealed record UserSuspended(Guid UserId, string Reason) : DomainEvent;

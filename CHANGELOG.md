@@ -4,6 +4,14 @@ Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esas alınır
 
 ## [Unreleased]
 
+### Faz 7 — Yönetim
+- Rol yönetimi (Moderator/Admin), `Moderator` politikası, askıya alma (giriş/yenileme/ilan engeli, ilanların kaldırılması).
+- Şikâyet sistemi ve moderasyon kuyruğu; kararlar: reddet, içeriği kaldır (ilan/mesaj), kullanıcıyı askıya al.
+- Kural tabanlı otomatik spam filtresi (engelle / incelemeye al) ilan ve mesajlarda.
+- Değiştirilemez denetim kaydı; gösterge paneli metrikleri ve modül metrik sözleşmesi (`IAdminMetricsSection`).
+- Balıkçı modülü yönetimi: av yasakları CRUD ve asgari boy güncelleme.
+- `/admin` yönetici paneli (bağımlılıksız, katı CSP, XSS'e karşı yalnızca `textContent`).
+
 ### Faz 6 — Mobil
 - `SahaNet.Mobile.Core`: tipli API istemcisi, 401'de belirteç yenileyen `AuthHandler`, SQLite önbellek + outbox, `SyncService`, offline-first `FishingRepository`, ViewModel'ler (CommunityToolkit.Mvvm), niş profili, Türkçe/İngilizce kaynaklar.
 - `SahaNet.Mobile` (.NET MAUI): niş bazlı build profili (`-p:Niche`), kurulum/ana ekran/deniz durumu/av günlüğü ekranları, sesli giriş, güvenli belirteç deposu, bağlantı izleme, Android kritik bildirim kanalı.

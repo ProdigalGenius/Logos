@@ -87,6 +87,8 @@ public static class DependencyInjection
         services.AddScoped<IListingRepository, ListingRepository>();
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IPaymentOrderRepository, PaymentOrderRepository>();
+        services.AddScoped<SahaNet.Application.Moderation.IModerationRepository, ModerationRepository>();
+        services.AddScoped<SahaNet.Application.Moderation.IAdminMetrics, AdminMetrics>();
     }
 
     private static void AddSecurity(IServiceCollection services)

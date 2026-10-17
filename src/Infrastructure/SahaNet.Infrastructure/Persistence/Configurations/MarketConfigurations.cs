@@ -27,6 +27,7 @@ internal sealed class ListingConfiguration : IEntityTypeConfiguration<Listing>
         builder.Property(l => l.ReservePrice).HasPrecision(14, 2);
         builder.Property(l => l.Unit).HasMaxLength(16).IsRequired();
         builder.Property(l => l.RegionCode).HasMaxLength(2);
+        builder.Property(l => l.ModerationNote).HasMaxLength(500);
 
         // Kategoriye özel alanlar jsonb olarak saklanır (şema modülde tanımlı).
         builder.Property(l => l.Attributes)

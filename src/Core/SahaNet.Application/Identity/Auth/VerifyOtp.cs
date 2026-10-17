@@ -62,6 +62,12 @@ internal sealed class VerifyOtpCommandHandler(
         }
 
         var user = await users.GetByPhoneHashAsync(phoneHash, cancellationToken);
+        if (user is { Status: UserStatus.Suspended })
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            return Result.Failure<AuthResponse>(IdentityErrors.AccountSuspended);
+        }
+
         var isNewUser = user is null;
         if (user is null)
         {

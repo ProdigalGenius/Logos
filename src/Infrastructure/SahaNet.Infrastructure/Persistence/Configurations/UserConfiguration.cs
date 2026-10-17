@@ -30,6 +30,8 @@ internal sealed class UserConfiguration(IPersonalDataProtector protector) : IEnt
         builder.Property(u => u.RegionCode).HasMaxLength(2);
         builder.Property(u => u.Status).HasConversion<string>().HasMaxLength(32);
         builder.Property(u => u.Role).HasConversion<string>().HasMaxLength(16);
+        builder.Property(u => u.SuspensionReason).HasMaxLength(500);
+        builder.HasIndex(u => u.CreatedAt);
         builder.HasIndex(u => new { u.Status, u.DeletionRequestedAt });
 
         builder.Ignore(u => u.IsOnboarded);

@@ -45,7 +45,10 @@ builder.Services.AddSingleton<IChatRealtime, SignalRChatRealtime>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 builder.Services.ConfigureOptions<ConfigureJwtBearer>();
 builder.Services.AddAuthorization(options =>
-    options.AddPolicy(JwtTokenClaims.AdminPolicy, policy => policy.RequireClaim(JwtTokenClaims.Role, "Admin")));
+{
+    options.AddPolicy(JwtTokenClaims.AdminPolicy, policy => policy.RequireClaim(JwtTokenClaims.Role, "Admin"));
+    options.AddPolicy(JwtTokenClaims.ModeratorPolicy, policy => policy.RequireClaim(JwtTokenClaims.Role, "Admin", "Moderator"));
+});
 
 // OTP uç noktaları için IP bazlı ek koruma (numara bazlı limitler Application katmanında).
 var otpPermitPerMinute = builder.Configuration.GetValue("RateLimiting:OtpPermitPerMinute", 10);
@@ -131,6 +134,22 @@ if (jobOptions.Enabled && jobOptions.DashboardEnabled)
     app.UseHangfireDashboard("/hangfire", new DashboardOptions { Authorization = [new LocalRequestsOnlyAuthorizationFilter()] });
 }
 
+// Yönetici paneli (statik, tek sayfa). Katı CSP: yalnızca kendi betikleri, satır içi betik yok.
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/admin", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.Headers.ContentSecurityPolicy =
+            "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
+        context.Response.Headers.XContentTypeOptions = "nosniff";
+        context.Response.Headers["Referrer-Policy"] = "no-referrer";
+    }
+
+    await next();
+});
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
@@ -155,6 +174,7 @@ app.MapMeEndpoints();
 app.MapAlertEndpoints();
 app.MapMarketEndpoints();
 app.MapPaymentEndpoints(paymentSandbox);
+app.MapAdminEndpoints();
 app.MapHub<ChatHub>(ChatHub.Path);
 app.MapFishingModule();
 

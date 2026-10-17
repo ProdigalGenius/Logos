@@ -131,6 +131,9 @@ internal sealed class ConversationRepository(SahaNetDbContext db) : IConversatio
         return page;
     }
 
+    public Task<ChatMessage?> GetMessageAsync(Guid messageId, CancellationToken cancellationToken) =>
+        db.Messages.FirstOrDefaultAsync(m => m.Id == messageId, cancellationToken);
+
     public async Task<IReadOnlyList<ChatMessage>> GetMessagesBySenderAsync(Guid senderId, int limit, CancellationToken cancellationToken) =>
         await db.Messages.AsNoTracking().Where(m => m.SenderId == senderId).OrderBy(m => m.SentAt).Take(limit).ToListAsync(cancellationToken);
 

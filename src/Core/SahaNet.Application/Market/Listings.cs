@@ -7,6 +7,7 @@ using SahaNet.Application.Identity.Abstractions;
 using SahaNet.Domain.Common;
 using SahaNet.Domain.Identity;
 using SahaNet.Domain.Market;
+using SahaNet.Application.Moderation;
 
 namespace SahaNet.Application.Market;
 
@@ -154,6 +155,8 @@ internal sealed class CreateListingCommandHandler(
     IUserRepository users,
     IListingRepository listings,
     IEnumerable<IListingCategoryProvider> providers,
+    ISpamFilter spamFilter,
+    IModerationService moderation,
     IUnitOfWork unitOfWork,
     IDateTimeProvider clock,
     Microsoft.Extensions.Options.IOptions<MarketOptions> options)
@@ -195,6 +198,16 @@ internal sealed class CreateListingCommandHandler(
             return Result.Failure<ListingResponse>(attributes.Error);
         }
 
+        var recentTitles = (await listings.GetBySellerAsync(userId, cancellationToken))
+            .Where(l => l.CreatedAt > clock.UtcNow.AddDays(-1))
+            .Select(l => l.Title)
+            .ToList();
+        var spam = spamFilter.Evaluate(SpamContent.Listing, $"{request.Title}\n{request.Description}", recentTitles);
+        if (spam.Verdict == SpamVerdict.Block)
+        {
+            return Result.Failure<ListingResponse>(SahaNet.Domain.Moderation.ModerationErrors.SpamBlocked);
+        }
+
         var now = clock.UtcNow;
         var maxEnd = now + options.Value.MaxListingDuration;
         var expiresAt = request.ExpiresAt is { } e ? (e > maxEnd ? maxEnd : e) : now + TimeSpan.FromDays(type == ListingType.Auction ? 1 : 7);
@@ -210,6 +223,13 @@ internal sealed class CreateListingCommandHandler(
 
         listings.Add(listing);
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (spam.Verdict == SpamVerdict.Review)
+        {
+            // Yayında kalır, moderatör kuyruğuna düşer.
+            await moderation.FlagAsync(SahaNet.Domain.Moderation.ReportTargetType.Listing, listing.Id, userId, spam, cancellationToken);
+        }
+
         return Result.Success(listing.ToResponse(userId, seller.DisplayName, options.Value.PublicBaseUrl));
     }
 }

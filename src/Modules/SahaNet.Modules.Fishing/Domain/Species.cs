@@ -29,5 +29,15 @@ public sealed class Species
     /// <summary>Asgari yasal av boyu (cm); sınır yoksa null.</summary>
     public int? MinLengthCm { get; private set; }
 
+    public void SetMinLength(int? minLengthCm)
+    {
+        if (minLengthCm is <= 0 or > 1000)
+        {
+            throw new ArgumentOutOfRangeException(nameof(minLengthCm));
+        }
+
+        MinLengthCm = minLengthCm;
+    }
+
     public bool IsUndersized(double lengthCm) => MinLengthCm is { } min && lengthCm < min;
 }

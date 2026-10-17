@@ -38,6 +38,25 @@ internal static class FishingEndpoints
             .WithSummary("Av yasakları takvimi (taslak veri, resmi tebliğle doğrulanmalı).")
             .AllowAnonymous();
 
+        // ---- Yönetici: yasak takvimi ve asgari boylar ----
+        var admin = group.MapGroup("/admin").RequireAuthorization("Admin");
+
+        admin.MapPost("/bans", async (SaveBanCommand command, ISender sender, CancellationToken ct) =>
+                (await sender.Send(command with { Id = null }, ct)).ToHttp())
+            .WithName("CreateFishingBan");
+
+        admin.MapPut("/bans/{id:guid}", async (Guid id, SaveBanCommand command, ISender sender, CancellationToken ct) =>
+                (await sender.Send(command with { Id = id }, ct)).ToHttp())
+            .WithName("UpdateFishingBan");
+
+        admin.MapDelete("/bans/{id:guid}", async (Guid id, ISender sender, CancellationToken ct) =>
+                (await sender.Send(new DeleteBanCommand(id), ct)).ToHttp())
+            .WithName("DeleteFishingBan");
+
+        admin.MapPut("/species/{code}", async (string code, MinLengthBody body, ISender sender, CancellationToken ct) =>
+                (await sender.Send(new SetSpeciesMinLengthCommand(code, body.MinLengthCm), ct)).ToHttp())
+            .WithName("SetSpeciesMinLength");
+
         // ---- Hal fiyatları ----
         group.MapGet("/prices", async (string? species, string? province, int? days, ISender sender, CancellationToken ct) =>
                 TypedResults.Ok(await sender.Send(new GetMarketPricesQuery(species, province, days ?? 7), ct)))
@@ -121,3 +140,5 @@ internal static class FishingEndpoints
 }
 
 internal sealed record ShareRequest(string Phone);
+
+internal sealed record MinLengthBody(int? MinLengthCm);

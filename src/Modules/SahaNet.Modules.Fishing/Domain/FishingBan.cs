@@ -62,6 +62,22 @@ public sealed class FishingBan : Entity<Guid>
     public string? Notes { get; private set; }
 
     /// <summary>Tarih yasak dönemi içinde mi (yıl sonunu aşan dönemler dahil).</summary>
+    public void Update(string title, int startMonth, int startDay, int endMonth, int endDay, string? speciesCode, string? regionCode, string? gear, string? notes)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+        _ = new DateOnly(2024, startMonth, startDay);
+        _ = new DateOnly(2024, endMonth, endDay);
+        Title = title.Trim();
+        StartMonth = startMonth;
+        StartDay = startDay;
+        EndMonth = endMonth;
+        EndDay = endDay;
+        SpeciesCode = speciesCode;
+        RegionCode = regionCode;
+        Gear = gear;
+        Notes = notes;
+    }
+
     public bool IsActiveOn(DateOnly date)
     {
         var key = (date.Month * 100) + date.Day;

@@ -6,6 +6,7 @@ using SahaNet.Application.Identity.Abstractions;
 using SahaNet.Domain.Common;
 using SahaNet.Domain.Identity;
 using SahaNet.Domain.Market;
+using SahaNet.Application.Moderation;
 
 namespace SahaNet.Application.Market;
 
@@ -194,6 +195,8 @@ internal sealed class SendMessageCommandHandler(
     IUserRepository users,
     IChatRealtime realtime,
     IUserNotifier notifier,
+    SahaNet.Application.Moderation.ISpamFilter spamFilter,
+    SahaNet.Application.Moderation.IModerationService moderation,
     IUnitOfWork unitOfWork,
     IDateTimeProvider clock,
     IOptions<MarketOptions> options)
@@ -218,6 +221,18 @@ internal sealed class SendMessageCommandHandler(
             return Result.Failure<MessageResponse>(MarketErrors.ConversationNotFound);
         }
 
+        var sender = await users.GetByIdAsync(userId, cancellationToken);
+        if (sender is null || sender.Status != UserStatus.Active)
+        {
+            return Result.Failure<MessageResponse>(IdentityErrors.AccountSuspended);
+        }
+
+        var spam = spamFilter.Evaluate(SpamContent.Message, request.Text, []);
+        if (spam.Verdict == SpamVerdict.Block)
+        {
+            return Result.Failure<MessageResponse>(SahaNet.Domain.Moderation.ModerationErrors.SpamBlocked);
+        }
+
         var now = clock.UtcNow;
         if (await conversations.CountRecentMessagesAsync(userId, now.AddMinutes(-1), cancellationToken) >= options.Value.MaxMessagesPerMinute)
         {
@@ -237,7 +252,11 @@ internal sealed class SendMessageCommandHandler(
         var recipients = conversation.Participants.Select(p => p.UserId).Where(id => id != userId).ToList();
         await realtime.MessageSentAsync(conversation.Participants.Select(p => p.UserId).ToList(), response, cancellationToken);
 
-        var sender = await users.GetByIdAsync(userId, cancellationToken);
+        if (spam.Verdict == SpamVerdict.Review)
+        {
+            await moderation.FlagAsync(SahaNet.Domain.Moderation.ReportTargetType.Message, message.Value.Id, userId, spam, cancellationToken);
+        }
+
         var preview = kind switch
         {
             MessageKind.Voice => "🎤 Sesli mesaj",

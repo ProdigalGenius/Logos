@@ -34,6 +34,9 @@ public static class DependencyInjection
 
         services.AddScoped<TokenIssuer>();
         services.AddScoped<IUserNotifier, PushUserNotifier>();
+        services.AddOptions<SahaNet.Application.Moderation.SpamOptions>().BindConfiguration(SahaNet.Application.Moderation.SpamOptions.SectionName);
+        services.AddSingleton<SahaNet.Application.Moderation.ISpamFilter, SahaNet.Application.Moderation.RuleBasedSpamFilter>();
+        services.AddScoped<SahaNet.Application.Moderation.IModerationService, SahaNet.Application.Moderation.ModerationService>();
         services.AddScoped<SahaNet.Application.Modules.IPersonalDataSection, MarketPersonalDataSection>();
 
         return services;

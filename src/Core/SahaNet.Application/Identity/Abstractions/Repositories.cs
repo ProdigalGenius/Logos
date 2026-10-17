@@ -11,6 +11,9 @@ public interface IUserRepository
 
     Task<IReadOnlyList<User>> GetPendingDeletionRequestedBeforeAsync(DateTimeOffset threshold, CancellationToken cancellationToken);
 
+    /// <summary>Yönetici araması: telefon özetiyle tam eşleşme veya ad içinde geçen metin.</summary>
+    Task<(IReadOnlyList<User> Items, int Total)> SearchAsync(string? phoneHash, string? text, UserStatus? status, int page, int pageSize, CancellationToken cancellationToken);
+
     void Add(User user);
 
     void Remove(User user);

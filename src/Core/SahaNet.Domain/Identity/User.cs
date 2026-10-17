@@ -62,6 +62,34 @@ public sealed class User : AggregateRoot<Guid>
 
     public void AssignRole(UserRole role) => Role = role;
 
+    public string? SuspensionReason { get; private set; }
+
+    public Result Suspend(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        if (Status == UserStatus.Suspended)
+        {
+            return Result.Failure(IdentityErrors.AccountSuspended);
+        }
+
+        Status = UserStatus.Suspended;
+        SuspensionReason = reason.Trim();
+        Raise(new UserSuspended(Id, SuspensionReason));
+        return Result.Success();
+    }
+
+    public Result Unsuspend()
+    {
+        if (Status != UserStatus.Suspended)
+        {
+            return Result.Failure(IdentityErrors.AccountNotSuspended);
+        }
+
+        Status = UserStatus.Active;
+        SuspensionReason = null;
+        return Result.Success();
+    }
+
     public Result CompleteOnboarding(string nicheKey, string regionCode, string? displayName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(nicheKey);
@@ -101,6 +129,8 @@ public sealed class User : AggregateRoot<Guid>
         {
             return Result.Failure<DateTimeOffset>(IdentityErrors.AccountPendingDeletion);
         }
+
+        // Askıdaki hesap da silme talep edebilir (KVKK hakkı); silme durumu askıyı geçersiz kılar.
 
         Status = UserStatus.PendingDeletion;
         DeletionRequestedAt = now;

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>SahaNet Yönetim</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header>
+    <strong>SahaNet · Yönetim</strong>
+    <nav id="tabs" hidden>
+      <button data-tab="dashboard" class="active">Gösterge</button>
+      <button data-tab="reports">Şikâyetler</button>
+      <button data-tab="users">Kullanıcılar</button>
+      <button data-tab="disputes">İtirazlar</button>
+      <button data-tab="bans">Av yasakları</button>
+      <button data-tab="audit">Denetim kaydı</button>
+    </nav>
+    <span id="who"></span>
+    <button id="logout" hidden>Çıkış</button>
+  </header>
+
+  <main>
+    <section id="login" class="card narrow">
+      <h1>Giriş</h1>
+      <p class="muted">Yönetici veya moderatör telefon numarası ile.</p>
+      <label>Telefon <input id="phone" inputmode="tel" autocomplete="tel" placeholder="05XX XXX XX XX"></label>
+      <button id="send-code">Kod gönder</button>
+      <label>SMS kodu <input id="code" inputmode="numeric" maxlength="6"></label>
+      <button id="verify">Giriş yap</button>
+      <p id="login-error" class="error" role="alert"></p>
+    </section>
+
+    <section id="dashboard" class="tab" hidden></section>
+    <section id="reports" class="tab" hidden>
+      <div class="toolbar">
+        <select id="report-status">
+          <option value="Open">Açık</option>
+          <option value="ActionTaken">İşlem yapılan</option>
+          <option value="Dismissed">Reddedilen</option>
+        </select>
+        <button id="reload-reports">Yenile</button>
+      </div>
+      <table><thead><tr><th>Tarih</th><th>Tür</th><th>İçerik</th><th>Sebep</th><th>Not</th><th>Durum</th><th></th></tr></thead><tbody id="report-rows"></tbody></table>
+    </section>
+    <section id="users" class="tab" hidden>
+      <div class="toolbar">
+        <input id="user-phone" placeholder="Telefon (tam)">
+        <input id="user-q" placeholder="Ad içinde ara">
+        <select id="user-status"><option value="">Tümü</option><option value="Active">Aktif</option><option value="Suspended">Askıda</option><option value="PendingDeletion">Silinecek</option></select>
+        <button id="search-users">Ara</button>
+      </div>
+      <table><thead><tr><th>Telefon</th><th>Ad</th><th>Niş / Bölge</th><th>Durum</th><th>Rol</th><th>Kayıt</th><th></th></tr></thead><tbody id="user-rows"></tbody></table>
+    </section>
+    <section id="disputes" class="tab" hidden>
+      <table><thead><tr><th>Tarih</th><th>Tutar</th><th>Gerekçe</th><th></th></tr></thead><tbody id="dispute-rows"></tbody></table>
+    </section>
+    <section id="bans" class="tab" hidden>
+      <form id="ban-form" class="card">
+        <h2>Yeni yasak dönemi</h2>
+        <div class="grid">
+          <label>Başlık <input name="title" required maxlength="200"></label>
+          <label>Tür kodu <input name="speciesCode" placeholder="boş = tümü"></label>
+          <label>Başlangıç (ay/gün) <span class="pair"><input name="startMonth" type="number" min="1" max="12" required><input name="startDay" type="number" min="1" max="31" required></span></label>
+          <label>Bitiş (ay/gün) <span class="pair"><input name="endMonth" type="number" min="1" max="12" required><input name="endDay" type="number" min="1" max="31" required></span></label>
+          <label>Av aracı <input name="gear"></label>
+          <label>Not <input name="notes" maxlength="1000"></label>
+        </div>
+        <button type="submit">Kaydet</button>
+      </form>
+      <table><thead><tr><th>Başlık</th><th>Dönem</th><th>Tür</th><th>Araç</th><th>Bugün</th><th></th></tr></thead><tbody id="ban-rows"></tbody></table>
+    </section>
+    <section id="audit" class="tab" hidden>
+      <table><thead><tr><th>Zaman</th><th>İşlem</th><th>Hedef</th><th>Ayrıntı</th><th>Yapan</th></tr></thead><tbody id="audit-rows"></tbody></table>
+    </section>
+    <p id="toast" role="status"></p>
+  </main>
+  <script src="admin.js"></script>
+</body>
+</html>

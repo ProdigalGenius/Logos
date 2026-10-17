@@ -43,6 +43,8 @@ public interface IConversationRepository
 
     Task<IReadOnlyList<ChatMessage>> GetMessagesAsync(Guid conversationId, DateTimeOffset? before, int limit, CancellationToken cancellationToken);
 
+    Task<ChatMessage?> GetMessageAsync(Guid messageId, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<ChatMessage>> GetMessagesBySenderAsync(Guid senderId, int limit, CancellationToken cancellationToken);
 
     Task<int> CountRecentMessagesAsync(Guid senderId, DateTimeOffset since, CancellationToken cancellationToken);

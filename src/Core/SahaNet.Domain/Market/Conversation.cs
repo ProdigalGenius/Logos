@@ -136,4 +136,14 @@ public sealed class ChatMessage : Entity<Guid>
     public string? MediaUrl { get; private set; }
 
     public DateTimeOffset SentAt { get; private set; }
+
+    public bool IsRedacted { get; private set; }
+
+    /// <summary>Moderasyon: içerik silinir, mesajın varlığı (sohbet akışı) korunur.</summary>
+    public void Redact()
+    {
+        Text = "[Bu mesaj moderasyon kararıyla kaldırıldı]";
+        MediaUrl = null;
+        IsRedacted = true;
+    }
 }

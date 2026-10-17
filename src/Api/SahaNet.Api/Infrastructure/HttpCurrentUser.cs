@@ -13,7 +13,11 @@ internal sealed class HttpCurrentUser(IHttpContextAccessor accessor) : ICurrentU
 {
     public Guid? Override { get; set; }
 
-    public bool IsAdmin => accessor.HttpContext?.User.FindFirstValue(JwtTokenClaims.Role) == "Admin";
+    public bool IsAdmin => Role == "Admin";
+
+    public bool IsModerator => Role is "Admin" or "Moderator";
+
+    private string? Role => accessor.HttpContext?.User.FindFirstValue(JwtTokenClaims.Role);
 
     public Guid? UserId
     {

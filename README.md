@@ -91,6 +91,13 @@ docker compose --profile api up --build
 | `GET /api/me/payments` | Ödemelerim (alıcı/satıcı) |
 | `GET /api/admin/payments/disputes` · `POST .../orders/{id}/resolve` · `GET .../commission` | Yönetici: itirazlar, karar, komisyon özeti |
 | `POST /api/payments/sandbox/{token}/pay` | YALNIZCA GELİŞTİRME: ödeme simülasyonu |
+| `POST /api/reports` | Şikâyet (ilan / kullanıcı / mesaj) |
+| `GET /api/admin/dashboard` | Gösterge paneli metrikleri (moderatör+) |
+| `GET /api/admin/reports` · `POST .../{id}/resolve` | Moderasyon kuyruğu ve karar (moderatör+) |
+| `GET /api/admin/users` · `POST .../{id}/suspend\|unsuspend` | Kullanıcı arama, askıya alma (moderatör+) |
+| `PUT /api/admin/users/{id}/role` · `GET /api/admin/audit` | Rol atama, denetim kaydı (yönetici) |
+| `POST/PUT/DELETE /api/fishing/admin/bans` · `PUT /api/fishing/admin/species/{code}` | Av yasakları ve asgari boylar (yönetici) |
+| `/admin` | Yönetici paneli (tek sayfa, OTP ile giriş) |
 | `/hangfire` | Arka plan işleri paneli (Development, yalnızca localhost) |
 | `/swagger` | OpenAPI arayüzü (Development) |
 
@@ -167,7 +174,7 @@ tablolarına FK yok). Çekirdekle sözleşmeler üzerinden konuşur:
 - **Yasak takvimi:** Yıllık tekrarlayan dönemler (yıl sonunu aşanlar dahil), tür/bölge/av aracı filtresi.
 
 > Tür asgari boyları ve yasak dönemleri **taslaktır**; yürürlükteki Ticari Amaçlı Su Ürünleri
-> Avcılığı Tebliği ile doğrulanmalıdır (Faz 7'de yönetici panelinden güncellenecek).
+> Avcılığı Tebliği ile doğrulanmalıdır; yönetici panelinden (`/admin` → Av yasakları) güncellenebilir.
 
 ### Pazar ve mesajlaşma (Faz 4)
 
@@ -245,6 +252,26 @@ dotnet build src/Mobile/SahaNet.Mobile -f net9.0-android -p:Niche=fishing
 - **Düşük donanım:** Android 7.0+ (API 24), derlenmiş XAML bağlamaları, Release'te R8 + AAB.
 - **KVKK:** Çıkışta/hesap silmede `LocalStore.ClearAsync` cihazdaki tüm veriyi siler.
 
+### Yönetim ve moderasyon (Faz 7)
+
+- **Roller:** `User`, `Moderator`, `Admin` (JWT `role`). İlk yönetici `Identity:AdminPhones` ile; sonrası panelden.
+  Moderatör yöneticiyi askıya alamaz; yönetici kendi rolünü düşüremez.
+- **Şikâyet:** Kullanıcılar ilan, kullanıcı veya mesajı şikâyet eder (spam, dolandırıcılık, uygunsuz, yasak/küçük
+  av); aynı içerik için tek açık şikâyet, günde en fazla 20. Kuyruk FIFO; aynı içerikteki şikâyetler birlikte sonuçlanır.
+- **Kararlar:** `Dismiss`, `RemoveContent` (ilan `Removed`, bekleyen teklifler reddedilir; mesaj karartılır, akış
+  korunur), `SuspendUser` (giriş/yenileme engellenir, aktif ilanlar kalkar). Askıdaki kullanıcı yine de hesap silme
+  hakkını kullanabilir (KVKK).
+- **Otomatik spam filtresi:** Kural tabanlı, açıklanabilir puan — yasaklı ifade (+5), dış link (+3, WhatsApp hariç),
+  büyük harfle bağırma (+2), tekrarlanan karakter (+1), son 24 saatte aynı ilan (+4). Telefon numarası
+  cezalandırılmaz. Puan ≥ 6 engellenir; ≥ 3 yayınlanır ama sistem şikâyeti olarak kuyruğa düşer (`Spam` ayarları).
+- **Denetim kaydı:** Her yönetim işlemi (şikâyet kararı, askı, rol, yasak/boy değişikliği) kim/ne/ne zaman ile.
+- **Gösterge paneli:** Kullanıcı (toplam, 7/30 gün, niş, bölge, 30 günlük günlük kayıt), ilan, satış hacmi,
+  komisyon, açık şikâyet/itiraz, uyarı, abonelik; modüller `IAdminMetricsSection` ile ek metrik verir
+  (balıkçı: av kaydı/kg, nokta, hal fiyatı bildirimi, yasak sayısı).
+- **Panel (`/admin`):** Bağımlılıksız tek sayfa; OTP ile giriş, rol kontrolü, sekmeler: gösterge, şikâyetler,
+  kullanıcılar, itirazlar, av yasakları, denetim. Güvenlik: tüm içerik `textContent` ile basılır, katı CSP
+  (satır içi betik yok), belirteç `sessionStorage`'da, telefonlar maskeli gösterilir.
+
 ### Veritabanı şeması
 
 `Database:ApplyMigrationsOnStartup=true` (Development) iken: migration varsa uygulanır, yoksa
@@ -277,5 +304,5 @@ Entegrasyon testleri Docker gerektirir (`postgis/postgis:16-3.4`, `redis:7-alpin
 - [x] Faz 4 — Pazar
 - [x] Faz 5 — Ödeme (sandbox sağlayıcı)
 - [x] Faz 6 — Mobil (MAUI, Android derlemesi CI'da)
-- [ ] Faz 7 — Yönetim
+- [x] Faz 7 — Yönetim
 - [ ] Faz 8 — İkinci niş

@@ -50,7 +50,7 @@ internal sealed class RefreshSessionCommandHandler(
         }
 
         var user = await users.GetByIdAsync(stored.UserId, cancellationToken);
-        if (user is null)
+        if (user is null || user.Status == UserStatus.Suspended)
         {
             return Result.Failure<AuthResponse>(IdentityErrors.RefreshTokenInvalid);
         }

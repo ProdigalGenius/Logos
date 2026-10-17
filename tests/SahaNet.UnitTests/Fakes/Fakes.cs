@@ -81,6 +81,8 @@ internal sealed class FakeCurrentUser : ICurrentUser
     public Guid? UserId { get; set; }
 
     public bool IsAdmin { get; set; }
+
+    public bool IsModerator { get; set; }
 }
 
 internal sealed class FakeModule(string key) : IModuleDescriptor
