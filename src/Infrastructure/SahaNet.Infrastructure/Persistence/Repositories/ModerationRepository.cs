@@ -73,9 +73,9 @@ internal sealed class AdminMetrics(SahaNetDbContext db) : IAdminMetrics
             NewUsers30Days: signups.Count,
             SuspendedUsers: await db.Users.CountAsync(u => u.Status == UserStatus.Suspended, cancellationToken),
             UsersByNiche: await db.Users.AsNoTracking().Where(u => u.NicheKey != null)
-                .GroupBy(u => u.NicheKey!).Select(g => new NamedCount(g.Key, g.Count())).OrderByDescending(n => n.Count).ToListAsync(cancellationToken),
+                .GroupBy(u => u.NicheKey!).OrderByDescending(g => g.Count()).Select(g => new NamedCount(g.Key, g.Count())).ToListAsync(cancellationToken),
             UsersByRegion: await db.Users.AsNoTracking().Where(u => u.RegionCode != null)
-                .GroupBy(u => u.RegionCode!).Select(g => new NamedCount(g.Key, g.Count())).OrderByDescending(n => n.Count).Take(10).ToListAsync(cancellationToken),
+                .GroupBy(u => u.RegionCode!).OrderByDescending(g => g.Count()).Take(10).Select(g => new NamedCount(g.Key, g.Count())).ToListAsync(cancellationToken),
             SignupsLast30Days: daily,
             ActiveListings: await db.Listings.CountAsync(l => l.Status == ListingStatus.Active && l.ExpiresAt > now, cancellationToken),
             ListingsLast30Days: await db.Listings.CountAsync(l => l.CreatedAt >= d30, cancellationToken),
